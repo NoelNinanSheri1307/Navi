@@ -1,0 +1,100 @@
+{
+  "algorithm": "SA",
+  "green_times": [
+    17.49,
+    17.49,
+    34.03,
+    34.98
+  ],
+  "cycle_time": 120,
+  "avg_speed": 13.6082,
+  "avg_density": 201.2472,
+  "avg_wait_time": 2932.1428,
+  "total_flow": 1385.5746,
+  "avg_queue_length": 100.6236,
+  "congestion_pressure": 87.12168,
+  "speed_density_ratio": 0.067619,
+  "fitness": -0.33195644,
+  "convergence_history": [
+    -0.34018876,
+    -0.33038363,
+    -0.33038363
+  ],
+  "simulation_steps": [
+    {
+      "cycle": 1,
+      "green_times": [
+        29.6,
+        29.52,
+        14.96,
+        29.92
+      ],
+      "avg_speed": 37.471,
+      "avg_density": 45.83,
+      "avg_wait": 2035.585,
+      "total_flow": 833.781,
+      "avg_queue": 22.915,
+      "pressure": 25.5567
+    },
+    {
+      "cycle": 2,
+      "green_times": [
+        20.8,
+        41.6,
+        20.8,
+        20.8
+      ],
+      "avg_speed": 11.9,
+      "avg_density": 144.557,
+      "avg_wait": 3311.795,
+      "total_flow": 1562.995,
+      "avg_queue": 72.278,
+      "pressure": 65.4686
+    },
+    {
+      "cycle": 3,
+      "green_times": [
+        29.71,
+        29.71,
+        29.71,
+        14.86
+      ],
+      "avg_speed": 8.547,
+      "avg_density": 193.236,
+      "avg_wait": 3174.708,
+      "total_flow": 1541.024,
+      "avg_queue": 96.618,
+      "pressure": 90.0681
+    },
+    {
+      "cycle": 4,
+      "green_times": [
+        17.33,
+        17.33,
+        34.67,
+        34.67
+      ],
+      "avg_speed": 5.015,
+      "avg_density": 277.856,
+      "avg_wait": 3349.294,
+      "total_flow": 1492.045,
+      "avg_queue": 138.928,
+      "pressure": 119.6146
+    },
+    {
+      "cycle": 5,
+      "green_times": [
+        17.49,
+        17.49,
+        34.03,
+        34.98
+      ],
+      "avg_speed": 5.108,
+      "avg_density": 344.757,
+      "avg_wait": 2789.332,
+      "total_flow": 1498.028,
+      "avg_queue": 172.379,
+      "pressure": 134.9004
+    }
+  ]
+}

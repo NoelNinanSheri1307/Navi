@@ -1,0 +1,54 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+  font-family: 'Footlight MT Light';
+  src: url('/fonts/FootlightMTLight.ttf') format('truetype'),
+       url('./assets/fonts/FootlightMTLight.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@layer base {
+  *, ::before, ::after {
+    font-family: 'Footlight MT Light', serif !important;
+  }
+  
+  html, body {
+    @apply text-white selection:bg-emerald-500/20 selection:text-emerald-400 antialiased bg-black;
+    font-family: 'Footlight MT Light', serif !important;
+    overflow-x: hidden;
+  }
+}
+
+@layer utilities {
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    @apply bg-white/20 rounded-full hover:bg-white/30 transition-colors;
+  }
+}
+
+/* Glassmorphism Classes */
+.glass-card {
+  @apply bg-white/[0.04] backdrop-blur-2xl border border-white/10 shadow-2xl;
+}
+
+.glow-emerald {
+  @apply shadow-[0_0_25px_rgba(16,185,129,0.15)];
+}
+
+.glow-blue {
+  @apply shadow-[0_0_25px_rgba(59,130,246,0.15)];
+}
+
+::selection {
+  @apply bg-emerald-500/30 text-emerald-400;
+}

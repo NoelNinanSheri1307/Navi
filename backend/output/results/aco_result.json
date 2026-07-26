@@ -1,0 +1,103 @@
+{
+  "algorithm": "ACO",
+  "green_times": [
+    19.31,
+    19.31,
+    26.75,
+    38.62
+  ],
+  "cycle_time": 120,
+  "avg_speed": 13.9498,
+  "avg_density": 198.5007,
+  "avg_wait_time": 2642.3919,
+  "total_flow": 1474.9408,
+  "avg_queue_length": 99.2503,
+  "congestion_pressure": 82.659747,
+  "speed_density_ratio": 0.070276,
+  "fitness": -0.32673367,
+  "convergence_history": [
+    -0.33944749,
+    -0.33854589,
+    -0.32795171,
+    -0.32795171,
+    -0.32795171,
+    -0.32778804
+  ],
+  "simulation_steps": [
+    {
+      "cycle": 1,
+      "green_times": [
+        19.38,
+        26.48,
+        19.38,
+        38.76
+      ],
+      "avg_speed": 39.123,
+      "avg_density": 43.779,
+      "avg_wait": 1647.446,
+      "total_flow": 1063.565,
+      "avg_queue": 21.89,
+      "pressure": 22.0797
+    },
+    {
+      "cycle": 2,
+      "green_times": [
+        20.8,
+        41.6,
+        20.8,
+        20.8
+      ],
+      "avg_speed": 12.356,
+      "avg_density": 143.479,
+      "avg_wait": 2930.451,
+      "total_flow": 1608.884,
+      "avg_queue": 71.74,
+      "pressure": 64.5829
+    },
+    {
+      "cycle": 3,
+      "green_times": [
+        29.71,
+        29.71,
+        29.71,
+        14.86
+      ],
+      "avg_speed": 8.208,
+      "avg_density": 193.614,
+      "avg_wait": 2294.622,
+      "total_flow": 1560.339,
+      "avg_queue": 96.807,
+      "pressure": 57.09
+    },
+    {
+      "cycle": 4,
+      "green_times": [
+        17.33,
+        17.33,
+        34.67,
+        34.67
+      ],
+      "avg_speed": 4.982,
+      "avg_density": 272.063,
+      "avg_wait": 3151.679,
+      "total_flow": 1569.723,
+      "avg_queue": 136.031,
+      "pressure": 124.1825
+    },
+    {
+      "cycle": 5,
+      "green_times": [
+        19.31,
+        19.31,
+        26.75,
+        38.62
+      ],
+      "avg_speed": 5.08,
+      "avg_density": 339.568,
+      "avg_wait": 3187.762,
+      "total_flow": 1572.192,
+      "avg_queue": 169.784,
+      "pressure": 145.3636
+    }
+  ]
+}
