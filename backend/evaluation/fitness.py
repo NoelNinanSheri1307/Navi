@@ -13,8 +13,10 @@ All raw metrics are normalised to [0,1] using soft-clip / reference values so
 that the fitness is always comparable across experiments.
 """
 
-import numpy as np
-from model.traffic_model import run_simulation
+try:
+    from simulation.traffic_model import run_simulation
+except ImportError:
+    from model.traffic_model import run_simulation
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Normalisation reference values (domain-expert estimates)

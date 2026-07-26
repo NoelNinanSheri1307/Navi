@@ -1,103 +1,118 @@
 {
   "algorithm": "DE",
   "green_times": [
-    14.86,
-    14.86,
-    44.57,
-    29.71
+    34.67,
+    34.67,
+    17.33,
+    17.33
   ],
   "cycle_time": 120,
-  "avg_speed": 8.9371,
-  "avg_density": 207.2705,
-  "avg_wait_time": 2602.519,
-  "total_flow": 1438.7559,
-  "avg_queue_length": 99.2145,
-  "congestion_pressure": 84.232241,
-  "speed_density_ratio": 0.043118,
-  "fitness": -0.34830754,
+  "avg_speed": 8.6954,
+  "avg_density": 202.9576,
+  "avg_wait_time": 2921.0019,
+  "total_flow": 1503.6922,
+  "avg_queue_length": 99.2167,
+  "congestion_pressure": 96.114573,
+  "speed_density_ratio": 0.042844,
+  "fitness": -0.18231219,
   "convergence_history": [
-    -0.33744269,
-    -0.33515891,
-    -0.33170276,
-    -0.33170276,
-    -0.33170276,
-    -0.33170276
+    -0.17836715,
+    -0.17621363,
+    -0.17017593,
+    -0.17017593,
+    -0.17017593,
+    -0.16262554,
+    -0.16262554,
+    -0.16262554,
+    -0.15441628,
+    -0.15441628,
+    -0.15441628,
+    -0.15441628,
+    -0.15441628,
+    -0.15441628,
+    -0.15441628,
+    -0.15441628,
+    -0.15441628,
+    -0.15441628,
+    -0.15441628,
+    -0.15441628,
+    -0.15441628
   ],
   "simulation_steps": [
     {
       "cycle": 1,
       "green_times": [
-        31.2,
-        31.2,
-        20.8,
-        20.8
+        27.75,
+        27.75,
+        27.75,
+        20.74
       ],
-      "avg_speed": 14.42,
-      "avg_density": 91.498,
-      "avg_wait": 1277.262,
-      "total_flow": 786.84,
-      "avg_queue": 23.645,
-      "pressure": 18.2823
+      "avg_speed": 9.499,
+      "avg_density": 101.457,
+      "avg_wait": 1608.524,
+      "total_flow": 1303.246,
+      "avg_queue": 39.418,
+      "pressure": 22.5893
     },
     {
       "cycle": 2,
       "green_times": [
-        20.8,
-        41.6,
-        20.8,
-        20.8
+        40.45,
+        21.18,
+        21.18,
+        21.18
       ],
-      "avg_speed": 11.75,
-      "avg_density": 147.807,
-      "avg_wait": 2939.44,
-      "total_flow": 1616.671,
-      "avg_queue": 73.904,
-      "pressure": 61.8515
+      "avg_speed": 18.983,
+      "avg_density": 107.993,
+      "avg_wait": 2477.517,
+      "total_flow": 1540.269,
+      "avg_queue": 53.997,
+      "pressure": 50.7881
     },
     {
       "cycle": 3,
       "green_times": [
-        29.71,
-        29.71,
-        29.71,
-        14.86
+        34.67,
+        17.33,
+        17.33,
+        34.67
       ],
-      "avg_speed": 8.346,
-      "avg_density": 192.242,
-      "avg_wait": 2416.914,
-      "total_flow": 1603.75,
-      "avg_queue": 96.121,
-      "pressure": 66.2845
+      "avg_speed": 4.99,
+      "avg_density": 183.226,
+      "avg_wait": 3330.196,
+      "total_flow": 1554.189,
+      "avg_queue": 91.613,
+      "pressure": 91.8895
     },
     {
       "cycle": 4,
       "green_times": [
-        17.33,
-        17.33,
-        34.67,
-        34.67
+        14.86,
+        29.71,
+        29.71,
+        29.71
       ],
-      "avg_speed": 5.189,
-      "avg_density": 269.035,
-      "avg_wait": 3228.42,
-      "total_flow": 1624.227,
-      "avg_queue": 134.518,
-      "pressure": 126.5478
+      "avg_speed": 5.013,
+      "avg_density": 271.902,
+      "avg_wait": 3085.923,
+      "total_flow": 1551.566,
+      "avg_queue": 135.951,
+      "pressure": 119.3636
     },
     {
       "cycle": 5,
       "green_times": [
-        14.86,
-        14.86,
-        44.57,
-        29.71
+        34.67,
+        34.67,
+        17.33,
+        17.33
       ],
-      "avg_speed": 4.98,
-      "avg_density": 335.769,
-      "avg_wait": 3150.559,
-      "total_flow": 1562.291,
-      "avg_queue": 167.885,
-      "pressure": 148.1951
+      "avg_speed": 4.992,
+      "avg_density": 350.209,
+      "avg_wait": 4102.85,
+      "total_flow": 1569.191,
+      "avg_queue": 175.105,
+      "pressure": 195.9423
     }
   ]
 }

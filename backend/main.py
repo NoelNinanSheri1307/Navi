@@ -28,13 +28,12 @@ from model.traffic_model import get_stats
 # Algorithm registry
 # ─────────────────────────────────────────────────────────────────────────────
 ALGO_REGISTRY = {
-    'GA':  ('optimization.ga',  'run_ga'),
-    'PSO': ('optimization.pso', 'run_pso'),
-    'GWO': ('optimization.gwo', 'run_gwo'),
-    'DE':  ('optimization.de',  'run_de'),
-    'ACO': ('optimization.aco', 'run_aco'),
-    'SA':  ('optimization.sa',  'run_sa'),
-    'HYBRID': ('optimization.hybrid_aco_sa_ga', 'run_hybrid'),
+    'GA':  ('algorithms.ga',  'run_ga'),
+    'PSO': ('algorithms.pso', 'run_pso'),
+    'GWO': ('algorithms.gwo', 'run_gwo'),
+    'DE':  ('algorithms.de',  'run_de'),
+    'ACO': ('algorithms.aco', 'run_aco'),
+    'SA':  ('algorithms.sa',  'run_sa'),
 }
 
 

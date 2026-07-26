@@ -14,41 +14,30 @@
 @layer base {
   *, ::before, ::after {
     font-family: 'Footlight MT Light', serif !important;
+    text-transform: none !important;
   }
   
   html, body {
-    @apply text-white selection:bg-emerald-500/20 selection:text-emerald-400 antialiased bg-black;
+    @apply text-zinc-100 bg-[#09090b] antialiased selection:bg-emerald-500/20 selection:text-emerald-300;
     font-family: 'Footlight MT Light', serif !important;
     overflow-x: hidden;
+    scroll-behavior: smooth;
   }
 }
 
 @layer utilities {
   .custom-scrollbar::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
+    width: 5px;
+    height: 5px;
   }
   .custom-scrollbar::-webkit-scrollbar-track {
     @apply bg-transparent;
   }
   .custom-scrollbar::-webkit-scrollbar-thumb {
-    @apply bg-white/20 rounded-full hover:bg-white/30 transition-colors;
+    @apply bg-zinc-800 rounded-full hover:bg-zinc-700 transition-colors;
   }
 }
 
-/* Glassmorphism Classes */
-.glass-card {
-  @apply bg-white/[0.04] backdrop-blur-2xl border border-white/10 shadow-2xl;
-}
-
-.glow-emerald {
-  @apply shadow-[0_0_25px_rgba(16,185,129,0.15)];
-}
-
-.glow-blue {
-  @apply shadow-[0_0_25px_rgba(59,130,246,0.15)];
-}
-
 ::selection {
-  @apply bg-emerald-500/30 text-emerald-400;
+  @apply bg-emerald-500/20 text-emerald-300;
 }
