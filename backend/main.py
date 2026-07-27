@@ -22,7 +22,10 @@ import textwrap
 # Ensure backend is importable when run from within the package dir
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from model.traffic_model import get_stats
+try:
+    from simulation.traffic_model import get_stats
+except ImportError:
+    from model.traffic_model import get_stats
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Algorithm registry
@@ -99,8 +102,8 @@ def _print_comparison(results: list[dict]) -> None:
 
     # Best
     best = max(results, key=lambda r: r['fitness'])
-    print(f"\n  🏆  Best algorithm: {best['algorithm']}  (fitness = {best['fitness']:.6f})")
-    print(f"      Green times:    {best['green_times']}")
+    print(f"\n  [BEST] Best algorithm: {best['algorithm']}  (fitness = {best['fitness']:.6f})")
+    print(f"         Green times:    {best['green_times']}")
     print()
 
 
@@ -195,9 +198,9 @@ def main():
         module_path, func_name = ALGO_REGISTRY[algo_name]
         runner = _import_runner(module_path, func_name)
 
-        print(f"\n{'─'*60}")
+        print(f"\n{'-'*60}")
         print(f"  Running {algo_name} ...")
-        print(f"{'─'*60}")
+        print(f"{'-'*60}")
 
         t0 = time.time()
         try:
@@ -210,10 +213,10 @@ def main():
         result = _standardise(raw_result)
         path   = _save_result(result, args.out)
 
-        print(f"\n  ✔  {algo_name} done in {elapsed:.1f}s")
-        print(f"     Fitness     : {result['fitness']:.6f}")
-        print(f"     Green times : {result['green_times']}")
-        print(f"     Saved → {path}")
+        print(f"\n  [OK] {algo_name} done in {elapsed:.1f}s")
+        print(f"       Fitness     : {result['fitness']:.6f}")
+        print(f"       Green times : {result['green_times']}")
+        print(f"       Saved -> {path}")
 
         all_results.append(result)
 
@@ -227,7 +230,7 @@ def main():
         summary_path = os.path.join(args.out, "summary.json")
         with open(summary_path, "w", encoding="utf-8") as f:
             json.dump(all_results, f, indent=2)
-        print(f"[INFO] Combined summary saved → {summary_path}\n")
+        print(f"[INFO] Combined summary saved -> {summary_path}\n")
     else:
         print("[WARN] No results to compare.")
 

@@ -6,15 +6,45 @@ The 35-dimensional parameter vector (5 variables × 7 internal breakpoints)
 shapes the membership functions of all antecedent variables.
 """
 
+import threading
+from typing import Dict, Any, List
 import numpy as np
 import skfuzzy as fuzz
 from skfuzzy import control as ctrl
 
 
-# ─────────────────────────────────────────────────────────────────────────────
-# Dataset Statistics (injected at import time from traffic_model / main)
-# ─────────────────────────────────────────────────────────────────────────────
-_STATS: dict = {}   # filled via set_dataset_stats()
+class FuzzyContext:
+    """
+    Thread-safe state container for dataset statistics bounds.
+    Replaces global module-level mutable dict while preserving API compatibility.
+    """
+
+    def __init__(self):
+        self._stats: Dict[str, float] = {}
+        self._lock = threading.Lock()
+
+    def set_stats(self, stats: Dict[str, float]) -> None:
+        """Set or update dataset bounds thread-safely."""
+        with self._lock:
+            self._stats.update(stats)
+
+    def get_stats(self) -> Dict[str, float]:
+        """Return dataset statistics bounds or raise RuntimeError if uninitialized."""
+        with self._lock:
+            if not self._stats:
+                raise RuntimeError(
+                    "Dataset statistics not set. Call set_dataset_stats() first."
+                )
+            return self._stats.copy()
+
+    def is_initialized(self) -> bool:
+        """Check if dataset stats have been set."""
+        with self._lock:
+            return bool(self._stats)
+
+
+# Global context instance
+_CONTEXT = FuzzyContext()
 
 
 def set_dataset_stats(stats: dict) -> None:
@@ -24,14 +54,11 @@ def set_dataset_stats(stats: dict) -> None:
         cp_min, cp_max, den_min, den_max, que_min, que_max,
         wt_min,  wt_max,  fl_min,  fl_max
     """
-    _STATS.update(stats)
+    _CONTEXT.set_stats(stats)
 
 
-def _require_stats() -> None:
-    if not _STATS:
-        raise RuntimeError(
-            "Dataset statistics not set. Call set_dataset_stats() first."
-        )
+def _require_stats() -> dict:
+    return _CONTEXT.get_stats()
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -61,8 +88,7 @@ def build_fuzzy_system(params: np.ndarray) -> ctrl.ControlSystemSimulation:
         [21:28] → avg_wait_time_s     breakpoints
         [28:35] → flow_veh_per_hr     breakpoints
     """
-    _require_stats()
-    s = _STATS
+    s = _require_stats()
     params = np.asarray(params, dtype=float)
 
     # ---------- Extract breakpoints per variable ----------

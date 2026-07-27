@@ -4,7 +4,7 @@ traffic_model.py
 Semi-realistic 4-lane intersection traffic simulation.
 
 The model evolves over `n_cycles` signal cycles, each of length
-`cycle_time` seconds.  At every cycle it:
+`cycle_time` seconds. At every cycle it:
   1. Samples 4 rows from VANET.csv as initial lane conditions.
   2. Uses the fuzzy system to compute a green-time allocation per lane.
   3. Simulates arrivals, departures, queue, wait, speed, flow, density,
@@ -15,72 +15,29 @@ The model evolves over `n_cycles` signal cycles, each of length
 import numpy as np
 import pandas as pd
 
-from fuzzy.fuzzy_system import build_fuzzy_system, compute_green_time, set_dataset_stats
+from fuzzy.fuzzy_system import build_fuzzy_system, compute_green_time
+from datasets.loader import DatasetLoader
+from configs.simulation_config import DEFAULT_SIMULATION_CONFIG
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Constants
+# Constants (Imported from centralized simulation config for framework consistency)
 # ─────────────────────────────────────────────────────────────────────────────
-N_LANES     = 4
-CYCLE_TIME  = 120          # seconds per signal cycle
-N_CYCLES    = 5            # simulation cycles
-FREE_SPEED  = 60.0         # km/h free-flow speed
-LANE_LENGTH = 0.5          # km
-
-# Gaussian noise std-dev (relative to value)
-NOISE_STD   = 0.03
-
-
-# ─────────────────────────────────────────────────────────────────────────────
-# Dataset loader (called once; cached)
-# ─────────────────────────────────────────────────────────────────────────────
-_df: pd.DataFrame | None = None
-_stats: dict = {}
+N_LANES     = DEFAULT_SIMULATION_CONFIG.n_lanes
+CYCLE_TIME  = int(DEFAULT_SIMULATION_CONFIG.cycle_time)
+N_CYCLES    = DEFAULT_SIMULATION_CONFIG.n_cycles
+FREE_SPEED  = DEFAULT_SIMULATION_CONFIG.free_speed
+LANE_LENGTH = DEFAULT_SIMULATION_CONFIG.lane_length
+NOISE_STD   = DEFAULT_SIMULATION_CONFIG.noise_std
 
 
 def _load_dataset(csv_path: str) -> pd.DataFrame:
-    global _df, _stats
-    if _df is None:
-        try:
-            # engine='python' for handling different line endings reliably
-            _df = pd.read_csv(csv_path, sep=",", engine="python")
-        except FileNotFoundError:
-            raise FileNotFoundError(
-                f"VANET dataset not found at '{csv_path}'. "
-                "Place VANET.csv in the project root and retry."
-            )
-        
-        # Calculate 'congestion_pressure' as it's often missing in raw telematics
-        if 'congestion_pressure' not in _df.columns:
-            # k_jam is 120, wait reference is 60 or simply normalized density * wait
-            _df['congestion_pressure'] = (_df['density_veh_per_km'] / 120.0) * (_df['avg_wait_time_s'] / 60.0)
-
-        required = {
-            'congestion_pressure', 'density_veh_per_km',
-            'queue_length_veh', 'avg_wait_time_s', 'flow_veh_per_hr'
-        }
-        missing = required - set(_df.columns)
-        if missing:
-            raise ValueError(f"VANET.csv is missing columns: {missing}")
-
-        _stats = {
-            'cp_min':  _df['congestion_pressure'].min(),
-            'cp_max':  _df['congestion_pressure'].max(),
-            'den_min': _df['density_veh_per_km'].min(),
-            'den_max': _df['density_veh_per_km'].max(),
-            'que_min': _df['queue_length_veh'].min(),
-            'que_max': _df['queue_length_veh'].max(),
-            'wt_min':  _df['avg_wait_time_s'].min(),
-            'wt_max':  _df['avg_wait_time_s'].max(),
-            'fl_min':  _df['flow_veh_per_hr'].min(),
-            'fl_max':  _df['flow_veh_per_hr'].max(),
-        }
-        set_dataset_stats(_stats)
-    return _df
+    """Delegates dataset loading to thread-safe DatasetLoader while preserving signature."""
+    return DatasetLoader.load_dataset(csv_path)
 
 
 def get_stats(csv_path: str = "vanet.csv") -> dict:
-    _load_dataset(csv_path)
-    return _stats
+    """Delegates dataset stats extraction to thread-safe DatasetLoader while preserving signature."""
+    return DatasetLoader.get_stats(csv_path)
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -103,7 +60,7 @@ def _simulate_lane_cycle(
 
     Returns dict with updated metrics.
     """
-    # --- Arrival rate (veh/s) from flow  ---
+    # --- Arrival rate (veh/s) from flow ---
     flow_hr   = _noisy(lane_row['flow_veh_per_hr'])
     arr_rate  = flow_hr / 3600.0                    # veh/s
     arrivals  = arr_rate * CYCLE_TIME               # vehicles this cycle
@@ -179,7 +136,7 @@ def run_simulation(
     # Build fuzzy simulation once per call
     try:
         fuzzy_sim = build_fuzzy_system(params)
-    except Exception as e:
+    except Exception:
         # If fuzzy build fails, return worst-case metrics
         return _worst_case_result(params)
 

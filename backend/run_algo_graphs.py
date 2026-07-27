@@ -91,14 +91,33 @@ METRIC_LABELS = ["Avg Speed\n(km/h)", "Avg Density\n(veh/km)",
 # ─────────────────────────────────────────────────────────────────────────────
 # Step 1 — Run all algorithms
 # ─────────────────────────────────────────────────────────────────────────────
-from optimization.ga  import run_ga
-from optimization.pso import run_pso
-from optimization.gwo import run_gwo
-from optimization.de  import run_de
-from optimization.aco import run_aco
-from optimization.sa  import run_sa
-from optimization.hybrid_aco_sa_ga import run_hybrid
-from model.traffic_model import get_stats
+try:
+    from algorithms.ga  import run_ga
+    from algorithms.pso import run_pso
+    from algorithms.gwo import run_gwo
+    from algorithms.de  import run_de
+    from algorithms.aco import run_aco
+    from algorithms.sa  import run_sa
+except ImportError:
+    from optimization.ga  import run_ga
+    from optimization.pso import run_pso
+    from optimization.gwo import run_gwo
+    from optimization.de  import run_de
+    from optimization.aco import run_aco
+    from optimization.sa  import run_sa
+
+try:
+    from algorithms.hybrid_aco_sa_ga import run_hybrid
+except ImportError:
+    try:
+        from optimization.hybrid_aco_sa_ga import run_hybrid
+    except ImportError:
+        run_hybrid = None
+
+try:
+    from simulation.traffic_model import get_stats
+except ImportError:
+    from model.traffic_model import get_stats
 
 def _standardise(r):
     return {
@@ -131,7 +150,7 @@ print("="*65)
 results = {}
 for algo in ALGO_ORDER:
     cfg = {**ALGO_CONFIG[algo], "csv_path": CSV_PATH}
-    print(f"\n{'─'*50}")
+    print(f"\n{'-'*50}")
     print(f"  [{algo}] Starting ...")
     t0 = time.time()
     raw = RUNNERS[algo](**cfg)
