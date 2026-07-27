@@ -1,0 +1,12 @@
+{
+  "experiment_name": "PSO_Benchmark",
+  "optimizer": "PSO",
+  "dataset": "vanet.csv",
+  "population_size": 5,
+  "evaluation_budget": 50,
+  "iterations": 3,
+  "random_seed": 42,
+  "output_directory": "output/experiments",
+  "notes": "CLI benchmark run",
+  "hyperparameters": {}
+}

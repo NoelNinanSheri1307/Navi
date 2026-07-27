@@ -27,9 +27,9 @@ class AlgorithmMetadata:
 class ExecutionMetadata:
     """Environment and platform execution metadata."""
     timestamp: str = field(default_factory=lambda: time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()))
-    python_version: str = field(default_factory=platform.python_version)
-    platform: str = field(default_factory=platform.platform)
-    cpu_architecture: str = field(default_factory=platform.machine)
+    python_version: str = field(default_factory=lambda: platform.python_version())
+    platform: str = field(default_factory=lambda: platform.platform())
+    cpu_architecture: str = field(default_factory=lambda: platform.machine())
 
 
 @dataclass

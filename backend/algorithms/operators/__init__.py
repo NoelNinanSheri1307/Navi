@@ -1,8 +1,8 @@
 """
 Navi Optimization Operators Package
 
-Exposes modular selection, crossover, mutation, and local search operators
-for Genetic Algorithm and Differential Evolution kernels.
+Exposes modular selection, crossover, mutation, velocity update, topology, and position
+update operators for Genetic Algorithm, Differential Evolution, and Particle Swarm Optimization.
 """
 
 from .selection import TournamentSelection
@@ -14,6 +14,10 @@ from .de_mutation import DEMutation
 from .de_crossover import DECrossover
 from .de_selection import DESelection
 
+from .pso_velocity import PSOVelocityUpdate
+from .pso_topology import PSOTopology
+from .pso_update import PSOPositionUpdate
+
 __all__ = [
     "TournamentSelection",
     "SimulatedBinaryCrossover",
@@ -22,4 +26,7 @@ __all__ = [
     "DEMutation",
     "DECrossover",
     "DESelection",
+    "PSOVelocityUpdate",
+    "PSOTopology",
+    "PSOPositionUpdate",
 ]

@@ -1,6 +1,6 @@
 [
   {
-    "algorithm": "DE",
+    "algorithm": "PSO",
     "green_times": [
       26.0,
       26.0,
@@ -8,35 +8,35 @@
       26.0
     ],
     "cycle_time": 120,
-    "avg_speed": 10.5695,
-    "avg_density": 200.3117,
-    "avg_wait_time": 3251.4513,
-    "total_flow": 1519.2604,
-    "avg_queue_length": 100.1559,
-    "congestion_pressure": 98.086956,
-    "speed_density_ratio": 0.052765,
-    "fitness": -0.17984375,
+    "avg_speed": 11.0082,
+    "avg_density": 199.6943,
+    "avg_wait_time": 2810.7161,
+    "total_flow": 1487.2968,
+    "avg_queue_length": 99.8472,
+    "congestion_pressure": 84.565751,
+    "speed_density_ratio": 0.055125,
+    "fitness": -0.17143546,
     "convergence_history": [
-      -0.16510334,
-      -0.16238078,
-      -0.16238078,
-      -0.16238078,
-      -0.16238078,
-      -0.16238078,
-      -0.16238078,
-      -0.16238078,
-      -0.16238078,
-      -0.16238078,
-      -0.16238078,
-      -0.16238078,
-      -0.16238078,
-      -0.16238078,
-      -0.16238078,
-      -0.16238078,
-      -0.16238078,
-      -0.16238078,
-      -0.16238078,
-      -0.1533932
+      -0.17011664,
+      -0.16708255,
+      -0.16708255,
+      -0.16120671,
+      -0.16120671,
+      -0.16120671,
+      -0.16120671,
+      -0.16120671,
+      -0.16120671,
+      -0.16120671,
+      -0.16120671,
+      -0.16120671,
+      -0.15955048,
+      -0.15955048,
+      -0.15955048,
+      -0.15955048,
+      -0.15955048,
+      -0.15955048,
+      -0.15955048,
+      -0.15955048
     ],
     "simulation_steps": [
       {
@@ -47,42 +47,42 @@
           26.0,
           26.0
         ],
-        "avg_speed": 19.237,
-        "avg_density": 79.478,
-        "avg_wait": 2187.417,
-        "total_flow": 1330.579,
-        "avg_queue": 39.739,
-        "pressure": 31.0021
+        "avg_speed": 21.406,
+        "avg_density": 78.585,
+        "avg_wait": 2911.173,
+        "total_flow": 1301.06,
+        "avg_queue": 39.292,
+        "pressure": 42.7593
       },
       {
         "cycle": 2,
+        "green_times": [
+          34.67,
+          23.11,
+          23.11,
+          23.11
+        ],
+        "avg_speed": 18.673,
+        "avg_density": 106.267,
+        "avg_wait": 2538.231,
+        "total_flow": 1497.992,
+        "avg_queue": 53.133,
+        "pressure": 32.2233
+      },
+      {
+        "cycle": 3,
         "green_times": [
           26.0,
           26.0,
           26.0,
           26.0
         ],
-        "avg_speed": 18.578,
-        "avg_density": 106.964,
-        "avg_wait": 3733.592,
-        "total_flow": 1557.089,
-        "avg_queue": 53.482,
-        "pressure": 55.3345
-      },
-      {
-        "cycle": 3,
-        "green_times": [
-          14.86,
-          29.71,
-          29.71,
-          29.71
-        ],
-        "avg_speed": 5.111,
-        "avg_density": 186.624,
-        "avg_wait": 2551.689,
-        "total_flow": 1512.414,
-        "avg_queue": 93.312,
-        "pressure": 70.9725
+        "avg_speed": 4.903,
+        "avg_density": 185.572,
+        "avg_wait": 2314.376,
+        "total_flow": 1538.211,
+        "avg_queue": 92.786,
+        "pressure": 61.9595
       },
       {
         "cycle": 4,
@@ -92,12 +92,12 @@
           26.0,
           26.0
         ],
-        "avg_speed": 4.941,
-        "avg_density": 273.578,
-        "avg_wait": 4002.795,
-        "total_flow": 1584.145,
-        "avg_queue": 136.789,
-        "pressure": 151.1617
+        "avg_speed": 5.072,
+        "avg_density": 274.312,
+        "avg_wait": 2814.152,
+        "total_flow": 1519.535,
+        "avg_queue": 137.156,
+        "pressure": 109.5812
       },
       {
         "cycle": 5,
@@ -107,12 +107,12 @@
           26.0,
           26.0
         ],
-        "avg_speed": 4.981,
-        "avg_density": 354.915,
-        "avg_wait": 3781.763,
-        "total_flow": 1612.075,
-        "avg_queue": 177.458,
-        "pressure": 181.9639
+        "avg_speed": 4.986,
+        "avg_density": 353.736,
+        "avg_wait": 3475.647,
+        "total_flow": 1579.687,
+        "avg_queue": 176.868,
+        "pressure": 176.3055
       }
     ]
   }

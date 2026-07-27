@@ -1,9 +1,11 @@
 """
 Navi Experiments Package
 
-Exposes experiment metadata dataclasses and trial execution abstractions.
+Exposes ExperimentManager, ExperimentConfig, and experiment metadata schemas.
 """
 
+from .config import ExperimentConfig
+from .manager import ExperimentManager, register_optimizer
 from .metadata import (
     AlgorithmMetadata,
     ExecutionMetadata,
@@ -12,6 +14,9 @@ from .metadata import (
 )
 
 __all__ = [
+    "ExperimentConfig",
+    "ExperimentManager",
+    "register_optimizer",
     "AlgorithmMetadata",
     "ExecutionMetadata",
     "BenchmarkMetadata",
