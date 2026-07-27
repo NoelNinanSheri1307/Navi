@@ -1,8 +1,9 @@
 """
 Navi Optimization Operators Package
 
-Exposes modular selection, crossover, mutation, velocity update, topology, and position
-update operators for Genetic Algorithm, Differential Evolution, and Particle Swarm Optimization.
+Exposes modular selection, crossover, mutation, velocity, topology, hierarchy,
+encircling, position update, ant colony, and simulated annealing operators for
+GA, DE, PSO, GWO, ACO, and SA search kernels.
 """
 
 from .selection import TournamentSelection
@@ -18,6 +19,18 @@ from .pso_velocity import PSOVelocityUpdate
 from .pso_topology import PSOTopology
 from .pso_update import PSOPositionUpdate
 
+from .gwo_leadership import GWOLeadership
+from .gwo_encircling import GWOEncircling
+from .gwo_position import GWOPositionUpdate
+
+from .aco_pheromone import ACORArchivePheromone
+from .aco_transition import ACORTransition
+from .aco_update import ACORArchiveUpdate
+
+from .sa_neighbor import SANeighborGenerator
+from .sa_temperature import SATemperatureSchedule
+from .sa_acceptance import SAAcceptanceCriterion
+
 __all__ = [
     "TournamentSelection",
     "SimulatedBinaryCrossover",
@@ -29,4 +42,13 @@ __all__ = [
     "PSOVelocityUpdate",
     "PSOTopology",
     "PSOPositionUpdate",
+    "GWOLeadership",
+    "GWOEncircling",
+    "GWOPositionUpdate",
+    "ACORArchivePheromone",
+    "ACORTransition",
+    "ACORArchiveUpdate",
+    "SANeighborGenerator",
+    "SATemperatureSchedule",
+    "SAAcceptanceCriterion",
 ]

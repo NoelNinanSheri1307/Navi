@@ -21,6 +21,9 @@ from algorithms.base import BaseOptimizer, PopulationState, IterationMetrics
 from algorithms.ga import GeneticAlgorithm
 from algorithms.de import DifferentialEvolution
 from algorithms.pso import ParticleSwarmOptimizer
+from algorithms.gwo import GreyWolfOptimizer
+from algorithms.aco import AntColonyOptimizer
+from algorithms.sa import SimulatedAnnealingOptimizer
 from analytics.stats import calculate_array_stats
 from analytics.plotting import generate_experiment_plots
 from experiments.config import ExperimentConfig
@@ -36,6 +39,9 @@ OPTIMIZER_REGISTRY: Dict[str, Type[BaseOptimizer]] = {
     "GA": GeneticAlgorithm,
     "DE": DifferentialEvolution,
     "PSO": ParticleSwarmOptimizer,
+    "GWO": GreyWolfOptimizer,
+    "ACO": AntColonyOptimizer,
+    "SA": SimulatedAnnealingOptimizer,
 }
 
 
