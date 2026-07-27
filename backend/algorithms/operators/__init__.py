@@ -31,6 +31,7 @@ from .sa_neighbor import SANeighborGenerator
 from .sa_temperature import SATemperatureSchedule
 from .sa_acceptance import SAAcceptanceCriterion
 from .telemetry_engine import TelemetryEngine, TelemetrySnapshot
+from .decision_engine import DecisionEngine, Recommendation
 
 __all__ = [
     "TournamentSelection",
@@ -54,4 +55,6 @@ __all__ = [
     "SAAcceptanceCriterion",
     "TelemetryEngine",
     "TelemetrySnapshot",
+    "DecisionEngine",
+    "Recommendation",
 ]

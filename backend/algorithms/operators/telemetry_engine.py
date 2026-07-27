@@ -8,6 +8,7 @@ and optimizer-specific performance metrics, producing telemetry snapshots
 without modifying optimizer behavior.
 """
 
+from collections import deque
 from dataclasses import dataclass, asdict
 import time
 from typing import Any, Dict, List, Optional
@@ -17,11 +18,12 @@ import numpy as np
 from algorithms.base import BaseOptimizer, PopulationState
 
 
-@dataclass
+@dataclass(frozen=True)
 class TelemetrySnapshot:
     """
     Quantitative performance metrics collected at a single optimization step.
     """
+    iteration: int
     # Universal metrics
     current_fitness: float
     best_fitness: float
@@ -65,8 +67,9 @@ class TelemetryEngine:
     Observes optimizer steps and compiles telemetry history.
     """
 
-    def __init__(self):
+    def __init__(self, window_size: int = 20):
         self._history: List[TelemetrySnapshot] = []
+        self._window: deque = deque(maxlen=window_size)
         self.start_time: float = 0.0
         self.initial_best_fitness: Optional[float] = None
 
@@ -81,6 +84,7 @@ class TelemetryEngine:
     def reset(self) -> None:
         """Reset telemetry collection state."""
         self._history.clear()
+        self._window.clear()
         self.start_time = time.time()
         self.initial_best_fitness = None
         self._prev_best_fitness = None
@@ -89,6 +93,10 @@ class TelemetryEngine:
         self._alpha_stability_counter = 0
         self._sa_improving_moves_count = 0
         self._sa_total_moves_count = 0
+        if hasattr(self, "_prev_de_fitness"):
+            self._prev_de_fitness = None
+        if hasattr(self, "_prev_pbest_scores"):
+            self._prev_pbest_scores = None
 
     def collect(self, optimizer: BaseOptimizer) -> TelemetrySnapshot:
         """
@@ -257,6 +265,7 @@ class TelemetryEngine:
 
         # 3. Create and store snapshot
         snapshot = TelemetrySnapshot(
+            iteration=optimizer.generation,
             current_fitness=current_fit,
             best_fitness=current_best,
             mean_fitness=mean_fit,
@@ -271,6 +280,7 @@ class TelemetryEngine:
         )
 
         self._history.append(snapshot)
+        self._window.append(snapshot)
         return snapshot
 
     def latest(self) -> Optional[TelemetrySnapshot]:
@@ -279,6 +289,29 @@ class TelemetryEngine:
             return self._history[-1]
         return None
 
+    def last(self, n: int) -> List[TelemetrySnapshot]:
+        """
+        Return the last n collected TelemetrySnapshot records.
+
+        Parameters
+        ----------
+        n : int
+            Number of recent snapshots to return.
+
+        Returns
+        -------
+        List[TelemetrySnapshot]
+            The last n snapshots, ordered from oldest to newest.
+        """
+        if n <= 0:
+            return []
+        return self._history[-n:]
+
     def history(self) -> List[TelemetrySnapshot]:
         """Return the complete list of collected TelemetrySnapshot records."""
         return self._history
+
+    @property
+    def rolling_window(self) -> List[TelemetrySnapshot]:
+        """Return the recent rolling window of snapshots."""
+        return list(self._window)

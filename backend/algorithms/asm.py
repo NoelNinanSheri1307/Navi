@@ -53,6 +53,7 @@ from algorithms.base import (
 from algorithms.strategy_registry import StrategyRegistry
 from algorithms.operators.asm_controller import ASMController
 from algorithms.operators.telemetry_engine import TelemetryEngine
+from algorithms.operators.decision_engine import DecisionEngine
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -126,6 +127,7 @@ class AdaptiveStrategyMetaheuristic(BaseOptimizer):
         verbose: bool = True,
         switch_schedule: Optional[List[Tuple[str, int]]] = None,
         registry: Optional[StrategyRegistry] = None,
+        telemetry_window: int = 20,
         **kwargs: Any,
     ):
         super().__init__(
@@ -160,8 +162,12 @@ class AdaptiveStrategyMetaheuristic(BaseOptimizer):
         self._schedule_index: int = 0
         self._total_evaluations: int = 0
 
-        # Telemetry Engine
-        self.telemetry = TelemetryEngine()
+        # Telemetry Engine (Configurable Window Size)
+        self.telemetry = TelemetryEngine(window_size=telemetry_window)
+
+        # Decision Engine
+        self.decision_engine = DecisionEngine()
+        self.latest_recommendation = None
 
     # ─────────────────────────────────────────────────────────────────────────
     # Schedule Scaling
@@ -278,6 +284,9 @@ class AdaptiveStrategyMetaheuristic(BaseOptimizer):
         # Collect telemetry snapshot
         self.telemetry.collect(self._controller.active_optimizer)
 
+        # Execute Decision Engine recommendation
+        self.latest_recommendation = self.decision_engine.recommend(self.telemetry)
+
         # Sync ASM-level counters
         self._sync_from_controller()
         self.state = state
@@ -348,6 +357,8 @@ class AdaptiveStrategyMetaheuristic(BaseOptimizer):
         self._schedule_index = 0
         self._total_evaluations = 0
         self.telemetry.reset()
+        self.decision_engine.reset()
+        self.latest_recommendation = None
 
     # ─────────────────────────────────────────────────────────────────────────
     # State Accessors (Override for global best from controller)
@@ -392,6 +403,18 @@ class AdaptiveStrategyMetaheuristic(BaseOptimizer):
             "population_state": self.state.copy() if self.state else None,
             "history": self.get_history(),
             "telemetry_history": [s.to_dict() for s in self.telemetry.history()],
+            "recommendation_history": [
+                {
+                    "recommended_optimizer": r.recommended_optimizer,
+                    "optimizer_scores": r.optimizer_scores,
+                    "exploration_need": r.exploration_need,
+                    "exploitation_need": r.exploitation_need,
+                    "escape_need": r.escape_need,
+                    "confidence": r.confidence,
+                    "explanation": r.explanation,
+                }
+                for r in self.decision_engine.history()
+            ],
         }
 
     def restore_state(self, state_dict: Dict[str, Any]) -> None:
@@ -418,6 +441,14 @@ class AdaptiveStrategyMetaheuristic(BaseOptimizer):
         if "telemetry_history" in state_dict:
             from algorithms.operators.telemetry_engine import TelemetrySnapshot
             self.telemetry._history = [TelemetrySnapshot(**s) for s in state_dict["telemetry_history"]]
+
+        if "recommendation_history" in state_dict:
+            from algorithms.operators.decision_engine import Recommendation
+            self.decision_engine._history = [
+                Recommendation(**r) for r in state_dict["recommendation_history"]
+            ]
+            if self.decision_engine._history:
+                self.latest_recommendation = self.decision_engine._history[-1]
 
         # Restore controller global best
         ctrl = state_dict.get("controller_state", {})
@@ -458,7 +489,6 @@ class AdaptiveStrategyMetaheuristic(BaseOptimizer):
             "switch_schedule": [
                 {"strategy": s, "threshold": t} for s, t in self._switch_schedule
             ],
-            "telemetry_history": [s.to_dict() for s in self.telemetry.history()],
         }
 
     # ─────────────────────────────────────────────────────────────────────────
@@ -552,6 +582,16 @@ class AdaptiveStrategyMetaheuristic(BaseOptimizer):
             print_interval=1,
         )
 
+        # Print Decision Engine recommendations if verbose
+        if self.verbose and hasattr(self, "latest_recommendation") and self.latest_recommendation is not None:
+            rec = self.latest_recommendation
+            print(
+                f"  [Decision Engine] Rec: {rec.recommended_optimizer} | "
+                f"Needs (Explr={rec.exploration_need:.2f}, Explt={rec.exploitation_need:.2f}, Esc={rec.escape_need:.2f}) | "
+                f"Confidence: {rec.confidence:.2f} | "
+                f"Explanation: {rec.explanation}"
+            )
+
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Backward-Compatible Wrapper Function
@@ -602,4 +642,10 @@ def run_asm(
     )
 
     res = asm.optimize(fitness_fn=fitness_fn, pop_size=pop_size, iterations=n_gen)
+    
+    # Telemetry Snapshot count validation check
+    num_snapshots = len(asm.telemetry.history())
+    num_steps = asm.generation
+    print(f"\n  [Telemetry Validation] Snapshots: {num_snapshots} | Steps: {num_steps} | Match: {num_snapshots == num_steps}\n")
+
     return res.to_dict()
