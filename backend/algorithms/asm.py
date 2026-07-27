@@ -52,6 +52,7 @@ from algorithms.base import (
 )
 from algorithms.strategy_registry import StrategyRegistry
 from algorithms.operators.asm_controller import ASMController
+from algorithms.operators.telemetry_engine import TelemetryEngine
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -158,6 +159,9 @@ class AdaptiveStrategyMetaheuristic(BaseOptimizer):
         # Schedule tracking
         self._schedule_index: int = 0
         self._total_evaluations: int = 0
+
+        # Telemetry Engine
+        self.telemetry = TelemetryEngine()
 
     # ─────────────────────────────────────────────────────────────────────────
     # Schedule Scaling
@@ -271,6 +275,9 @@ class AdaptiveStrategyMetaheuristic(BaseOptimizer):
         # Delegate step to active optimizer
         state = self._controller.step_optimizer(fitness_fn)
 
+        # Collect telemetry snapshot
+        self.telemetry.collect(self._controller.active_optimizer)
+
         # Sync ASM-level counters
         self._sync_from_controller()
         self.state = state
@@ -340,6 +347,7 @@ class AdaptiveStrategyMetaheuristic(BaseOptimizer):
         self._controller.reset()
         self._schedule_index = 0
         self._total_evaluations = 0
+        self.telemetry.reset()
 
     # ─────────────────────────────────────────────────────────────────────────
     # State Accessors (Override for global best from controller)
@@ -383,6 +391,7 @@ class AdaptiveStrategyMetaheuristic(BaseOptimizer):
             "controller_state": controller_state,
             "population_state": self.state.copy() if self.state else None,
             "history": self.get_history(),
+            "telemetry_history": [s.to_dict() for s in self.telemetry.history()],
         }
 
     def restore_state(self, state_dict: Dict[str, Any]) -> None:
@@ -405,6 +414,10 @@ class AdaptiveStrategyMetaheuristic(BaseOptimizer):
         pop_state = state_dict.get("population_state")
         if isinstance(pop_state, PopulationState):
             self.state = pop_state.copy()
+
+        if "telemetry_history" in state_dict:
+            from algorithms.operators.telemetry_engine import TelemetrySnapshot
+            self.telemetry._history = [TelemetrySnapshot(**s) for s in state_dict["telemetry_history"]]
 
         # Restore controller global best
         ctrl = state_dict.get("controller_state", {})
@@ -445,6 +458,7 @@ class AdaptiveStrategyMetaheuristic(BaseOptimizer):
             "switch_schedule": [
                 {"strategy": s, "threshold": t} for s, t in self._switch_schedule
             ],
+            "telemetry_history": [s.to_dict() for s in self.telemetry.history()],
         }
 
     # ─────────────────────────────────────────────────────────────────────────

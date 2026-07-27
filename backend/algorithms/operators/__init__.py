@@ -30,6 +30,7 @@ from .aco_update import ACORArchiveUpdate
 from .sa_neighbor import SANeighborGenerator
 from .sa_temperature import SATemperatureSchedule
 from .sa_acceptance import SAAcceptanceCriterion
+from .telemetry_engine import TelemetryEngine, TelemetrySnapshot
 
 __all__ = [
     "TournamentSelection",
@@ -51,4 +52,6 @@ __all__ = [
     "SANeighborGenerator",
     "SATemperatureSchedule",
     "SAAcceptanceCriterion",
+    "TelemetryEngine",
+    "TelemetrySnapshot",
 ]
