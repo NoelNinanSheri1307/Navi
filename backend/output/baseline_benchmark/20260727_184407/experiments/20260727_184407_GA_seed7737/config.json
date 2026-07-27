@@ -1,0 +1,12 @@
+{
+  "experiment_name": "Baseline_GA_seed7737",
+  "optimizer": "GA",
+  "dataset": "vanet.csv",
+  "population_size": 15,
+  "evaluation_budget": 500,
+  "iterations": 20,
+  "random_seed": 7737,
+  "output_directory": "output/baseline_benchmark\\20260727_184407\\experiments",
+  "notes": "Baseline benchmark run, seed=7737",
+  "hyperparameters": {}
+}

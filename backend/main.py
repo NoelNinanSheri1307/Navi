@@ -37,6 +37,7 @@ ALGO_REGISTRY = {
     'DE':  ('algorithms.de',  'run_de'),
     'ACO': ('algorithms.aco', 'run_aco'),
     'SA':  ('algorithms.sa',  'run_sa'),
+    'ASM': ('algorithms.asm', 'run_asm'),
 }
 
 
@@ -182,6 +183,7 @@ def main():
         'DE':  de_kw,
         'ACO': aco_kw,
         'SA':  sa_kw,
+        'ASM': dict(pop_size=args.pop, n_gen=args.iter),
         'HYBRID': {
             'pop_size': args.pop,
             'n_gen': args.iter,
