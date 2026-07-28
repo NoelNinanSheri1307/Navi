@@ -31,7 +31,11 @@ from .sa_neighbor import SANeighborGenerator
 from .sa_temperature import SATemperatureSchedule
 from .sa_acceptance import SAAcceptanceCriterion
 from .telemetry_engine import TelemetryEngine, TelemetrySnapshot
+from .optimizer_capabilities import OptimizerCapability, OPTIMIZER_CAPABILITIES
+from .feature_extractor import FeatureExtractor
+from .need_estimator import NeedEstimator
 from .decision_engine import DecisionEngine, Recommendation
+from .adaptive_switch_controller import AdaptiveSwitchController
 
 __all__ = [
     "TournamentSelection",
@@ -55,6 +59,11 @@ __all__ = [
     "SAAcceptanceCriterion",
     "TelemetryEngine",
     "TelemetrySnapshot",
+    "OptimizerCapability",
+    "OPTIMIZER_CAPABILITIES",
+    "FeatureExtractor",
+    "NeedEstimator",
     "DecisionEngine",
     "Recommendation",
+    "AdaptiveSwitchController",
 ]

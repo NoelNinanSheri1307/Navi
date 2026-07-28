@@ -54,6 +54,7 @@ from algorithms.strategy_registry import StrategyRegistry
 from algorithms.operators.asm_controller import ASMController
 from algorithms.operators.telemetry_engine import TelemetryEngine
 from algorithms.operators.decision_engine import DecisionEngine
+from algorithms.operators.adaptive_switch_controller import AdaptiveSwitchController
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -169,6 +170,21 @@ class AdaptiveStrategyMetaheuristic(BaseOptimizer):
         self.decision_engine = DecisionEngine()
         self.latest_recommendation = None
 
+        # Configurations for Adaptive Switching
+        self.adaptive_switching = kwargs.get("adaptive_switching", False)
+        self.confidence_threshold = kwargs.get("confidence_threshold", 0.15)
+        self.minimum_runtime_steps = kwargs.get("minimum_runtime_steps", 3)
+        self.switch_cooldown_steps = kwargs.get("switch_cooldown_steps", 2)
+
+        # Tracking state variables
+        self.current_optimizer = ""
+        self.previous_optimizer = None
+        self.current_optimizer_runtime = 0
+        self.steps_since_last_switch = 0
+        self.last_switch_step = 0
+        self.last_recommendation = None
+        self.last_confidence = None
+
     # ─────────────────────────────────────────────────────────────────────────
     # Schedule Scaling
     # ─────────────────────────────────────────────────────────────────────────
@@ -237,8 +253,19 @@ class AdaptiveStrategyMetaheuristic(BaseOptimizer):
         state = self._controller.initialize_optimizer(fitness_fn, pop_size=pop_size)
 
         # Sync ASM-level counters
+        self.generation = 0
         self._sync_from_controller()
         self.state = state
+        self.state.generation = self.generation
+
+        # Initialize tracking state variables
+        self.current_optimizer = first_strategy
+        self.previous_optimizer = None
+        self.current_optimizer_runtime = 0
+        self.steps_since_last_switch = 0
+        self.last_switch_step = 0
+        self.last_recommendation = None
+        self.last_confidence = None
 
         # Log initial state
         self.logger.start(initial_fitness=state.best_fitness)
@@ -285,11 +312,27 @@ class AdaptiveStrategyMetaheuristic(BaseOptimizer):
         self.telemetry.collect(self._controller.active_optimizer)
 
         # Execute Decision Engine recommendation
-        self.latest_recommendation = self.decision_engine.recommend(self.telemetry)
+        try:
+            self.latest_recommendation = self.decision_engine.recommend(self.telemetry)
+        except Exception as e:
+            import warnings
+            warnings.warn(f"Decision Engine failed to return a recommendation: {e}")
+            self.latest_recommendation = None
+
+        # Update tracking counters
+        self.current_optimizer_runtime += 1
+        self.steps_since_last_switch += 1
+        if self.latest_recommendation is not None:
+            self.last_recommendation = self.latest_recommendation.recommended_optimizer
+            self.last_confidence = self.latest_recommendation.confidence
+
+        # Increment generation
+        self.generation += 1
 
         # Sync ASM-level counters
         self._sync_from_controller()
         self.state = state
+        self.state.generation = self.generation
         self._log_step()
 
         return state
@@ -359,6 +402,13 @@ class AdaptiveStrategyMetaheuristic(BaseOptimizer):
         self.telemetry.reset()
         self.decision_engine.reset()
         self.latest_recommendation = None
+        self.current_optimizer = ""
+        self.previous_optimizer = None
+        self.current_optimizer_runtime = 0
+        self.steps_since_last_switch = 0
+        self.last_switch_step = 0
+        self.last_recommendation = None
+        self.last_confidence = None
 
     # ─────────────────────────────────────────────────────────────────────────
     # State Accessors (Override for global best from controller)
@@ -415,6 +465,13 @@ class AdaptiveStrategyMetaheuristic(BaseOptimizer):
                 }
                 for r in self.decision_engine.history()
             ],
+            "current_optimizer": self.current_optimizer,
+            "previous_optimizer": self.previous_optimizer,
+            "current_optimizer_runtime": self.current_optimizer_runtime,
+            "steps_since_last_switch": self.steps_since_last_switch,
+            "last_switch_step": self.last_switch_step,
+            "last_recommendation": self.last_recommendation,
+            "last_confidence": self.last_confidence,
         }
 
     def restore_state(self, state_dict: Dict[str, Any]) -> None:
@@ -433,6 +490,14 @@ class AdaptiveStrategyMetaheuristic(BaseOptimizer):
         self.evaluations_used = state_dict.get("evaluations_used", 0)
         self._schedule_index = state_dict.get("schedule_index", 0)
         self._total_evaluations = state_dict.get("total_evaluations", 0)
+
+        self.current_optimizer = state_dict.get("current_optimizer", "")
+        self.previous_optimizer = state_dict.get("previous_optimizer", None)
+        self.current_optimizer_runtime = state_dict.get("current_optimizer_runtime", 0)
+        self.steps_since_last_switch = state_dict.get("steps_since_last_switch", 0)
+        self.last_switch_step = state_dict.get("last_switch_step", 0)
+        self.last_recommendation = state_dict.get("last_recommendation", None)
+        self.last_confidence = state_dict.get("last_confidence", None)
 
         pop_state = state_dict.get("population_state")
         if isinstance(pop_state, PopulationState):
@@ -499,34 +564,82 @@ class AdaptiveStrategyMetaheuristic(BaseOptimizer):
         fitness_fn: Callable[[np.ndarray], Tuple[float, Dict[str, Any]]],
     ) -> None:
         """
-        Check if the current evaluation count has crossed the next scheduled
-        threshold and trigger a strategy switch if needed.
-
-        This method is the sole switching trigger in Stage 4.0A. In Stage 4.0B,
-        this will be augmented or replaced by an adaptive decision policy
-        without changing the ASM public API.
+        Evaluate adaptive or manual transition conditions and trigger optimizer switches.
         """
-        # Already past the last schedule entry -- continue with final strategy
-        if self._schedule_index >= len(self._switch_schedule) - 1:
-            return
-
-        _, current_threshold = self._switch_schedule[self._schedule_index]
-
-        if self._total_evaluations >= current_threshold:
-            # Advance to next scheduled strategy
-            self._schedule_index += 1
-            next_strategy, _ = self._switch_schedule[self._schedule_index]
-            remaining = max(0, self.budget - self._total_evaluations)
-
-            if remaining <= 0:
+        if self.adaptive_switching:
+            # Adaptive Mode: evaluate Decision Engine recommendations
+            if self.latest_recommendation is None:
                 return
 
-            self._controller.switch_strategy(
-                new_strategy_name=next_strategy,
-                fitness_fn=fitness_fn,
-                remaining_budget=remaining,
-                reason="schedule",
+            target_opt = AdaptiveSwitchController.decide(
+                current_optimizer=self.current_optimizer,
+                recommendation=self.latest_recommendation,
+                current_runtime=self.current_optimizer_runtime,
+                steps_since_last_switch=self.steps_since_last_switch,
+                confidence_threshold=self.confidence_threshold,
+                minimum_runtime_steps=self.minimum_runtime_steps,
+                switch_cooldown_steps=self.switch_cooldown_steps,
+                verbose=self.verbose,
             )
+
+            # Failure Handling: check for invalid recommended optimizer names
+            target_opt_upper = target_opt.upper()
+            valid_optimizers = ["GA", "DE", "PSO", "GWO", "ACO", "SA"]
+            if target_opt_upper not in valid_optimizers:
+                import warnings
+                warnings.warn(
+                    f"Invalid optimizer name recommended by Decision Engine: {target_opt}. "
+                    f"Ignoring recommendation and continuing with current optimizer."
+                )
+                return
+
+            if target_opt_upper != self.current_optimizer.upper():
+                # Trigger strategy switch
+                self.previous_optimizer = self.current_optimizer
+                remaining = max(0, self.budget - self._total_evaluations)
+                if remaining <= 0:
+                     return
+
+                # Reuse existing ASMController transition logic
+                self._controller.switch_strategy(
+                    new_strategy_name=target_opt_upper,
+                    fitness_fn=fitness_fn,
+                    remaining_budget=remaining,
+                    reason="adaptive",
+                )
+
+                # Reset runtime tracking counters
+                self.current_optimizer = target_opt_upper
+                self.current_optimizer_runtime = 0
+                self.steps_since_last_switch = 0
+                self.last_switch_step = self.generation
+        else:
+            # Manual Mode: schedule-driven switching from Stage 4.0A
+            if self._schedule_index >= len(self._switch_schedule) - 1:
+                return
+
+            _, current_threshold = self._switch_schedule[self._schedule_index]
+
+            if self._total_evaluations >= current_threshold:
+                # Advance to next scheduled strategy
+                self._schedule_index += 1
+                next_strategy, _ = self._switch_schedule[self._schedule_index]
+                remaining = max(0, self.budget - self._total_evaluations)
+
+                if remaining <= 0:
+                    return
+
+                self.previous_optimizer = self.current_optimizer
+                self._controller.switch_strategy(
+                    new_strategy_name=next_strategy,
+                    fitness_fn=fitness_fn,
+                    remaining_budget=remaining,
+                    reason="schedule",
+                )
+                self.current_optimizer = next_strategy
+                self.current_optimizer_runtime = 0
+                self.steps_since_last_switch = 0
+                self.last_switch_step = self.generation
 
     def _sync_from_controller(self) -> None:
         """
@@ -539,7 +652,6 @@ class AdaptiveStrategyMetaheuristic(BaseOptimizer):
 
         self._total_evaluations = self._compute_total_evaluations()
         self.evaluations_used = self._total_evaluations
-        self.generation += 1
 
         # Update PopulationState metadata with ASM info
         if self.state is not None:
@@ -587,6 +699,7 @@ class AdaptiveStrategyMetaheuristic(BaseOptimizer):
             rec = self.latest_recommendation
             print(
                 f"  [Decision Engine] Rec: {rec.recommended_optimizer} | "
+                f"Features: (Prog={rec.features.get('progress_rate')}, DivTrend={rec.features.get('diversity_trend')}, Stab={rec.features.get('stability_score')}, BudgetPr={rec.features.get('budget_pressure')}) | "
                 f"Needs (Explr={rec.exploration_need:.2f}, Explt={rec.exploitation_need:.2f}, Esc={rec.escape_need:.2f}) | "
                 f"Confidence: {rec.confidence:.2f} | "
                 f"Explanation: {rec.explanation}"
@@ -602,6 +715,7 @@ def run_asm(
     n_gen: int = 50,
     seed: int = 42,
     switch_schedule: Optional[List[Tuple[str, int]]] = None,
+    **kwargs: Any,
 ) -> dict:
     """
     Backward-compatible wrapper function for ASM.
@@ -639,6 +753,7 @@ def run_asm(
         seed=seed,
         verbose=True,
         switch_schedule=switch_schedule,
+        **kwargs,
     )
 
     res = asm.optimize(fitness_fn=fitness_fn, pop_size=pop_size, iterations=n_gen)

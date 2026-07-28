@@ -3,39 +3,17 @@ decision_engine.py
 ------------------
 Decision Engine for the Adaptive Strategy Metaheuristic (ASM).
 
-Analyzes telemetry snapshots to estimate current search needs (exploration,
-exploitation, escape) and recommends the most suitable optimizer kernel
-based on their configured capability profiles.
+Coordinates feature extraction, search need estimation, and capability matching
+to rank and recommend the best optimizer.
 """
 
 from dataclasses import dataclass, field
 from typing import Dict, Any, List, Optional, Tuple
 
 from algorithms.operators.telemetry_engine import TelemetryEngine, TelemetrySnapshot
-
-
-# ─────────────────────────────────────────────────────────────────────────────
-# Optimizer Capability Configuration
-# ─────────────────────────────────────────────────────────────────────────────
-@dataclass(frozen=True)
-class OptimizerCapability:
-    """
-    Search capability profile of an optimizer kernel.
-    """
-    exploration: float
-    exploitation: float
-    escape: float
-
-
-# Default capability profiles for the six reference optimizers
-DEFAULT_CAPABILITIES: Dict[str, OptimizerCapability] = {
-    "GA":  OptimizerCapability(exploration=0.4, exploitation=0.4, escape=0.2),
-    "DE":  OptimizerCapability(exploration=0.5, exploitation=0.3, escape=0.2),
-    "PSO": OptimizerCapability(exploration=0.3, exploitation=0.5, escape=0.2),
-    "GWO": OptimizerCapability(exploration=0.3, exploitation=0.4, escape=0.3),
-    "ACO": OptimizerCapability(exploration=0.4, exploitation=0.3, escape=0.3),
-    "SA":  OptimizerCapability(exploration=0.2, exploitation=0.3, escape=0.5),
-}
+from algorithms.operators.optimizer_capabilities import OptimizerCapability, OPTIMIZER_CAPABILITIES
+from algorithms.operators.feature_extractor import FeatureExtractor
+from algorithms.operators.need_estimator import NeedEstimator
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -53,6 +31,7 @@ class Recommendation:
     escape_need: float
     confidence: float
     explanation: str
+    features: Dict[str, Any]
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -70,9 +49,9 @@ class DecisionEngine:
         Parameters
         ----------
         capabilities : Optional[Dict[str, OptimizerCapability]]
-            Custom capability profiles. If None, uses DEFAULT_CAPABILITIES.
+            Custom capability profiles. If None, loads OPTIMIZER_CAPABILITIES.
         """
-        self.capabilities = capabilities if capabilities is not None else dict(DEFAULT_CAPABILITIES)
+        self.capabilities = capabilities if capabilities is not None else dict(OPTIMIZER_CAPABILITIES)
         self._history: List[Recommendation] = []
 
     def reset(self) -> None:
@@ -105,32 +84,27 @@ class DecisionEngine:
                 escape_need=0.34,
                 confidence=0.0,
                 explanation="No telemetry available yet. Recommending default optimizer.",
+                features={
+                    "progress_rate": "Plateaued",
+                    "diversity_trend": "Stable",
+                    "stability_score": 1.0,
+                    "budget_pressure": 0.0,
+                },
             )
             self._history.append(rec)
             return rec
 
-        # 1. Compute Search Needs (Exploration, Exploitation, Escape)
-        escape_score = min(latest.iterations_since_improvement / 10.0, 1.0)
-        
-        # Exploitation is proportional to recent fitness improvement and low stagnation
-        raw_improvement = max(0.0, latest.fitness_improvement)
-        exploitation_score = min(raw_improvement * 100.0, 1.0) * (1.0 - escape_score)
-        
-        # Exploration is the default need when not stagnating and not actively exploiting
-        exploration_score = (1.0 - escape_score) * (1.0 - exploitation_score)
+        # 1. Feature Extraction
+        # Use the rolling window from the telemetry engine for trend analysis
+        features = FeatureExtractor.extract(telemetry.rolling_window)
 
-        # Enforce sum-to-one constraint via normalization
-        total_need = escape_score + exploitation_score + exploration_score
-        if total_need > 0.0:
-            escape_need = escape_score / total_need
-            exploitation_need = exploitation_score / total_need
-            exploration_need = exploration_score / total_need
-        else:
-            escape_need = 0.33
-            exploitation_need = 0.33
-            exploration_need = 0.34
+        # 2. Need Estimation
+        needs = NeedEstimator.estimate(features, latest.iterations_since_improvement)
+        exploration_need = needs["exploration"]
+        exploitation_need = needs["exploitation"]
+        escape_need = needs["escape"]
 
-        # 2. Score Optimizers against Needs
+        # 3. Score Optimizers against Capabilities
         raw_scores: Dict[str, float] = {}
         for opt_name, cap in self.capabilities.items():
             score = (
@@ -140,7 +114,7 @@ class DecisionEngine:
             )
             raw_scores[opt_name] = score
 
-        # Normalize scores to [0.0, 1.0]
+        # Normalize suitability scores to [0.0, 1.0] across registry
         min_s = min(raw_scores.values())
         max_s = max(raw_scores.values())
         range_s = max_s - min_s
@@ -152,21 +126,20 @@ class DecisionEngine:
             else:
                 normalized_scores[opt_name] = 1.0
 
-        # Determine best optimizer and confidence
+        # Sort optimizers by score
         sorted_opts = sorted(normalized_scores.items(), key=lambda x: x[1], reverse=True)
         recommended_optimizer = sorted_opts[0][0]
         
-        # Confidence is the margin between the first and second best choices
-        if len(sorted_opts) > 1:
-            confidence = float(sorted_opts[0][1] - sorted_opts[1][1])
+        # Calculate raw score difference for confidence
+        sorted_raw = sorted(raw_scores.items(), key=lambda x: x[1], reverse=True)
+        if len(sorted_raw) > 1:
+            confidence = float(sorted_raw[0][1] - sorted_raw[1][1])
         else:
             confidence = 1.0
 
-        # 3. Generate Programmatic Explanation
+        # 4. Generate Explanation directly corresponding to evidence
         explanation = self._generate_explanation(
-            latest.iterations_since_improvement,
-            latest.fitness_improvement,
-            latest.population_diversity,
+            features,
             exploration_need,
             exploitation_need,
             escape_need
@@ -176,11 +149,12 @@ class DecisionEngine:
         recommendation = Recommendation(
             recommended_optimizer=recommended_optimizer,
             optimizer_scores={k: round(v, 4) for k, v in normalized_scores.items()},
-            exploration_need=round(exploration_need, 4),
-            exploitation_need=round(exploitation_need, 4),
-            escape_need=round(escape_need, 4),
+            exploration_need=exploration_need,
+            exploitation_need=exploitation_need,
+            escape_need=escape_need,
             confidence=round(confidence, 4),
             explanation=explanation,
+            features=features,
         )
 
         self._history.append(recommendation)
@@ -201,31 +175,59 @@ class DecisionEngine:
     # ─────────────────────────────────────────────────────────────────────────────
     @staticmethod
     def _generate_explanation(
-        stagnation: int,
-        improvement: float,
-        diversity: float,
+        features: Dict[str, Any],
         exploration: float,
         exploitation: float,
         escape: float,
     ) -> str:
-        """Produce deterministic, rule-based text explanation of needs."""
-        if escape > 0.4:
-            return (
-                f"Search has stagnated for {stagnation} iterations with low diversity "
-                f"({diversity:.4f}), increasing the need for escape."
-            )
-        elif exploitation > 0.4:
-            return (
-                f"Improvement of {improvement:.6f} has been detected in recent steps, "
-                f"increasing the need for exploitation."
-            )
-        elif exploration > 0.4:
-            return (
-                f"Diversity is stabilizing ({diversity:.4f}) without significant recent "
-                f"improvement, increasing the need for exploration."
-            )
+        """Produce deterministic, evidence-based text explanation of needs."""
+        progress_rate = features["progress_rate"]
+        diversity_trend = features["diversity_trend"]
+        stability_score = features["stability_score"]
+        budget_pressure = features["budget_pressure"]
+
+        reasons = []
+        
+        # Progress Rate explanation
+        if progress_rate in ["Very High", "High"]:
+            reasons.append("Progress remains strong.")
+        elif progress_rate == "Moderate":
+            reasons.append("Progress is moderate.")
         else:
-            return (
-                f"Balanced search dynamics: exploration ({exploration:.2f}), "
-                f"exploitation ({exploitation:.2f}), escape ({escape:.2f})."
-            )
+            reasons.append("Best fitness has plateaued.")
+
+        # Diversity Trend explanation
+        if diversity_trend == "Increasing":
+            reasons.append("Diversity is increasing.")
+        elif diversity_trend == "Rapidly Collapsing":
+            reasons.append("Diversity has collapsed.")
+        elif diversity_trend == "Gradually Falling":
+            reasons.append("Diversity is gradually decreasing.")
+        else:
+            reasons.append("Diversity is stable.")
+
+        # Stability explanation
+        if stability_score > 0.6:
+            reasons.append("Search has remained stable for multiple iterations.")
+        else:
+            reasons.append("Search dynamics are active.")
+
+        # Budget pressure explanation
+        if budget_pressure > 0.8:
+            reasons.append("Budget pressure is critical.")
+        elif budget_pressure > 0.5:
+            reasons.append("Budget pressure is increasing.")
+        else:
+            reasons.append("Budget pressure is low.")
+
+        # Concluding need statement
+        max_need = max(exploration, exploitation, escape)
+        if max_need == exploration:
+            reasons.append("Exploration behavior is recommended.")
+        elif max_need == exploitation:
+            reasons.append("Exploitation is currently favored.")
+        else:
+            reasons.append("Escape behavior is recommended.")
+
+        return " ".join(reasons)
+

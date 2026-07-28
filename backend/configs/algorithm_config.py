@@ -85,6 +85,12 @@ class ASMConfig:
     ucb_exploration_c: float = 1.414
     seed: int = 42
 
+    # Adaptive switching parameters
+    adaptive_switching: bool = False
+    confidence_threshold: float = 0.15
+    minimum_runtime_steps: int = 3
+    switch_cooldown_steps: int = 2
+
 
 DEFAULT_ALGO_CONFIGS: Dict[str, Dict[str, Any]] = {
     "GA": {
@@ -125,5 +131,11 @@ DEFAULT_ALGO_CONFIGS: Dict[str, Dict[str, Any]] = {
         "T_start": 1.0,
         "T_end": 0.001,
         "step_size": 0.1,
+    },
+    "ASM": {
+        "adaptive_switching": False,
+        "confidence_threshold": 0.15,
+        "minimum_runtime_steps": 3,
+        "switch_cooldown_steps": 2,
     },
 }
