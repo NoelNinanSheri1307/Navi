@@ -175,6 +175,7 @@ class AdaptiveStrategyMetaheuristic(BaseOptimizer):
         self.confidence_threshold = kwargs.get("confidence_threshold", 0.15)
         self.minimum_runtime_steps = kwargs.get("minimum_runtime_steps", 3)
         self.switch_cooldown_steps = kwargs.get("switch_cooldown_steps", 2)
+        self.adaptive_debug = kwargs.get("adaptive_debug", False)
 
         # Tracking state variables
         self.current_optimizer = ""
@@ -368,6 +369,10 @@ class AdaptiveStrategyMetaheuristic(BaseOptimizer):
             if self.is_budget_exhausted():
                 break
             self.step(fitness_fn)
+
+        # Evaluate the final recommendation produced by the last step
+        if self.adaptive_switching:
+            self._check_and_switch(fitness_fn)
 
         # Final evaluation for complete result dict
         best_solution = self.get_best_solution()
@@ -704,6 +709,33 @@ class AdaptiveStrategyMetaheuristic(BaseOptimizer):
                 f"Confidence: {rec.confidence:.2f} | "
                 f"Explanation: {rec.explanation}"
             )
+
+            if self.adaptive_debug:
+                print("  [Adaptive Debug]\n  Normalized Suitability Scores")
+                for opt_name in ["GA", "DE", "PSO", "GWO", "SA", "ACO"]:
+                    score = rec.optimizer_scores.get(opt_name, 0.0)
+                    print(f"  {opt_name:<3} : {score:.2f}")
+                print(f"  Selected          : {rec.recommended_optimizer}")
+                print(f"  Confidence Margin : {rec.confidence:.2f}")
+                print(f"  Threshold         : {self.confidence_threshold:.2f}")
+                
+                different_opt = rec.recommended_optimizer.upper() != self.current_optimizer.upper()
+                rejections = []
+                if not different_opt:
+                    rejections.append("Recommendation equals currently active optimizer")
+                if rec.confidence < self.confidence_threshold:
+                    rejections.append(f"Confidence below threshold ({rec.confidence:.2f} < {self.confidence_threshold:.2f})")
+                if self.current_optimizer_runtime < self.minimum_runtime_steps:
+                    rejections.append(f"Minimum runtime not satisfied ({self.current_optimizer_runtime} < {self.minimum_runtime_steps} steps)")
+                if self.steps_since_last_switch < self.switch_cooldown_steps:
+                    rejections.append(f"Switch cooldown active ({self.steps_since_last_switch} < {self.switch_cooldown_steps} steps)")
+
+                if rejections:
+                    print("  Switch Allowed    : NO")
+                    print(f"  Reason            : {rejections[0]}")
+                else:
+                    print("  Switch Allowed    : YES")
+                    print("  Reason            : All switching conditions satisfied")
 
 
 # ─────────────────────────────────────────────────────────────────────────────

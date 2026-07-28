@@ -90,6 +90,7 @@ class ASMConfig:
     confidence_threshold: float = 0.15
     minimum_runtime_steps: int = 3
     switch_cooldown_steps: int = 2
+    adaptive_debug: bool = False
 
 
 DEFAULT_ALGO_CONFIGS: Dict[str, Dict[str, Any]] = {
@@ -137,5 +138,6 @@ DEFAULT_ALGO_CONFIGS: Dict[str, Dict[str, Any]] = {
         "confidence_threshold": 0.15,
         "minimum_runtime_steps": 3,
         "switch_cooldown_steps": 2,
+        "adaptive_debug": False,
     },
 }
