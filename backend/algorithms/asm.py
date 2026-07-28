@@ -467,6 +467,7 @@ class AdaptiveStrategyMetaheuristic(BaseOptimizer):
                     "escape_need": r.escape_need,
                     "confidence": r.confidence,
                     "explanation": r.explanation,
+                    "features": r.features,
                 }
                 for r in self.decision_engine.history()
             ],
@@ -514,9 +515,17 @@ class AdaptiveStrategyMetaheuristic(BaseOptimizer):
 
         if "recommendation_history" in state_dict:
             from algorithms.operators.decision_engine import Recommendation
-            self.decision_engine._history = [
-                Recommendation(**r) for r in state_dict["recommendation_history"]
-            ]
+            self.decision_engine._history = []
+            for r in state_dict["recommendation_history"]:
+                if "features" not in r:
+                    r = dict(r)
+                    r["features"] = {
+                        "progress_rate": "Plateaued",
+                        "diversity_trend": "Stable",
+                        "stability_score": 1.0,
+                        "budget_pressure": 0.0,
+                    }
+                self.decision_engine._history.append(Recommendation(**r))
             if self.decision_engine._history:
                 self.latest_recommendation = self.decision_engine._history[-1]
 
