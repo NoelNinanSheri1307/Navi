@@ -8,7 +8,7 @@ import { InfoPanel } from "../components/ui/InfoPanel";
 import { Button } from "../components/ui/Button";
 import { Badge } from "../components/ui/Badge";
 import SimulationCanvas from "../components/SimulationCanvas";
-import rawData from "../data/data.json";
+import { API_BASE_URL, WS_BASE_URL } from "../config/api";
 import { 
   Play, 
   Pause, 
@@ -31,11 +31,9 @@ export const Simulation = () => {
   const [speed, setSpeed] = useState(1);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
-  const [runHistory, setRunHistory] = useState(() => {
-    const saved = localStorage.getItem("navi_run_history");
-    return saved ? JSON.parse(saved) : [];
-  });
-
+  const [maxSteps, setMaxSteps] = useState(20);
+  
+  const [runHistory, setRunHistory] = useState([]);
   const [liveMetrics, setLiveMetrics] = useState({
     queue: 0,
     throughput: 0,
@@ -47,167 +45,162 @@ export const Simulation = () => {
   const [timeline, setTimeline] = useState([]);
   const [historyWaitTimes, setHistoryWaitTimes] = useState([]);
   const [historyQueues, setHistoryQueues] = useState([]);
-
-  // Fetch the selected algorithm's baseline results from data.json
-  const algoData = rawData.find(d => d.algorithm === selectedAlgo) || rawData[0];
-  const maxSteps = algoData.convergence_history.length;
-
-  // Active Simulation variables interpolated over step progress
-  const progressRatio = currentStep / (maxSteps - 1 || 1);
-  const startWait = 4500; // ms baseline delay
-  const targetWait = algoData.avg_wait_time || 3200;
-  const currentWaitTime = startWait - (startWait - targetWait) * progressRatio;
-
-  const startPressure = 160;
-  const targetPressure = algoData.congestion_pressure || 100;
-  const currentPressure = startPressure - (startPressure - targetPressure) * progressRatio;
-
-  const startSpeed = 1.8;
-  const targetSpeed = (algoData.avg_speed || 10) / 4.5;
-  const currentSpeed = startSpeed + (targetSpeed - startSpeed) * progressRatio;
-
-  // Current green times interpolated from baseline to optimal
-  const currentGreenTimes = algoData.green_times.map((gt, idx) => {
-    const startGt = 30; // 30s initial baseline
-    return Math.round(startGt + (gt - startGt) * progressRatio);
+  
+  // Real-time telemetry values from WebSocket
+  const [telemetryState, setTelemetryState] = useState({
+    fitness: 0.0,
+    best_fitness: 0.0,
+    current_optimizer: "GA",
+    runtime: 0.0,
+    green_times: [30, 30, 30, 30],
+    cycle_time: 120,
+    avg_speed: 1.8,
+    avg_density: 160.0,
+    avg_wait_time: 4500.0,
+    total_flow: 0.0,
+    avg_queue_length: 0.0,
+    congestion_pressure: 160.0
   });
 
-  // ASM specific simulation values
-  const getAsmState = (step) => {
-    if (selectedAlgo !== "ASM" && selectedAlgo !== "HYBRID") return null;
-    
-    // Map step indexes to transition profiles
-    if (step < 6) {
-      return {
-        active: "GA",
-        explr: 0.85 - step * 0.05,
-        explt: 0.10 + step * 0.02,
-        escape: 0.05,
-        recommend: "GA",
-        margin: 0.01,
-        decision: "STAY"
-      };
-    } else if (step >= 6 && step < 13) {
-      return {
-        active: "PSO",
-        explr: 0.25 - (step - 6) * 0.02,
-        explt: 0.70 + (step - 6) * 0.01,
-        escape: 0.05,
-        recommend: "PSO",
-        margin: 0.14,
-        decision: "SWITCH"
-      };
-    } else {
-      return {
-        active: "SA",
-        explr: 0.15,
-        explt: 0.35,
-        escape: 0.50,
-        recommend: "SA",
-        margin: 0.22,
-        decision: "SWITCH"
-      };
-    }
-  };
+  const [asmState, setAsmState] = useState(null);
+  const [convergenceHistory, setConvergenceHistory] = useState([]);
 
-  const asmState = getAsmState(currentStep);
+  const wsRef = useRef(null);
 
-  // Interval execution logic
-  const timerRef = useRef(null);
-
+  // Fetch simulation history list on mount
   useEffect(() => {
-    if (isPlaying) {
-      const intervalMs = 1200 / speed;
-      timerRef.current = setInterval(() => {
-        setCurrentStep((prev) => {
-          if (prev >= maxSteps - 1) {
-            setIsPlaying(false);
-            clearInterval(timerRef.current);
-            handleComplete();
-            return prev;
-          }
-          const next = prev + 1;
-          logStepEvent(next);
-          return next;
-        });
-      }, intervalMs);
-    } else {
-      if (timerRef.current) clearInterval(timerRef.current);
-    }
+    fetchHistory();
+  }, []);
 
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
-    };
-  }, [isPlaying, speed, selectedAlgo]);
-
-  const logStepEvent = (step) => {
-    const fitness = algoData.convergence_history[step].toFixed(5);
-    const newEvents = [];
-
-    if (step === 1) {
-      newEvents.push(`[System] Optimization loop started for algorithm ${selectedAlgo}.`);
-    }
-
-    newEvents.push(`[Iteration ${step}] Fitness evaluated: ${fitness}.`);
-
-    if ((selectedAlgo === "ASM" || selectedAlgo === "HYBRID") && (step === 6 || step === 13)) {
-      const activeState = getAsmState(step);
-      newEvents.push(`[ASM Decision] Stagnation detected. Recommended strategy: ${activeState.active}. Confidence margin: ${activeState.margin}.`);
-      newEvents.push(`[ASM Controller] Safety checks approved. Swapping active algorithm to ${activeState.active}.`);
-    }
-
-    setTimeline(prev => [...prev, ...newEvents]);
+  const fetchHistory = () => {
+    fetch(`${API_BASE_URL}/simulation/history`)
+      .then(res => res.json())
+      .then(data => setRunHistory(data))
+      .catch(() => {});
   };
 
-  const handleStart = () => {
-    if (currentStep === 0) {
-      setTimeline([
-        `[System] Initializing simulation workspace.`,
-        `[System] Loading dataset parameters from ${selectedDataset}.`,
-        `[System] Spawning vehicles at jam density baseline.`
-      ]);
+  // Setup WebSocket connection
+  const connectWebSocket = () => {
+    if (wsRef.current) wsRef.current.close();
+
+    const socketUrl = `${WS_BASE_URL}/simulation/ws`;
+    const socket = new WebSocket(socketUrl);
+    wsRef.current = socket;
+
+    socket.onopen = () => {
+      console.log("[WS] Connected to telemetry socket");
+    };
+
+    socket.onmessage = (event) => {
+      const msg = JSON.parse(event.data);
+      
+      if (msg.type === "telemetry") {
+        const data = msg.data;
+        setTelemetryState(data);
+        setCurrentStep(data.iteration);
+        setConvergenceHistory(prev => [...prev, data.fitness]);
+
+        // Capture ASM details if returned
+        if (data.needs || data.confidence) {
+          setAsmState({
+            active: data.current_optimizer,
+            recommend: data.recommendation || "",
+            decision: data.switch_decision || "STAY",
+            margin: data.confidence || 0.0,
+            explr: data.needs?.exploration || 0.0,
+            explt: data.needs?.exploitation || 0.0,
+            escape: data.needs?.escape || 0.0
+          });
+        }
+      } 
+      
+      else if (msg.type === "event") {
+        setTimeline(prev => [...prev, `[${msg.event}] ${JSON.stringify(msg.payload)}`]);
+        if (msg.event === "Optimization Finished") {
+          setIsPlaying(false);
+          fetchHistory();
+        }
+      }
+    };
+
+    socket.onclose = () => {
+      console.log("[WS] Telemetry socket closed");
+    };
+  };
+
+  const handleStart = async () => {
+    try {
+      // Connect WS first
+      connectWebSocket();
+
+      const response = await fetch(`${API_BASE_URL}/simulation/start`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          algorithm: selectedAlgo,
+          dataset: selectedDataset,
+          pop_size: 15,
+          n_gen: maxSteps
+        })
+      });
+
+      if (!response.ok) {
+        const err = await response.json();
+        throw new Error(err.detail || "Failed to start optimization");
+      }
+
+      setIsPlaying(true);
+      setTimeline([`[System] Starting optimization pipeline.`]);
+      setConvergenceHistory([]);
       setHistoryQueues([]);
       setHistoryWaitTimes([]);
+    } catch (e) {
+      setTimeline(prev => [...prev, `[Error] ${e.message}`]);
     }
+  };
+
+  const handlePause = async () => {
+    await fetch(`${API_BASE_URL}/simulation/pause`, { method: "POST" });
+    setIsPlaying(false);
+  };
+
+  const handleResume = async () => {
+    await fetch(`${API_BASE_URL}/simulation/resume`, { method: "POST" });
     setIsPlaying(true);
   };
 
-  const handlePause = () => {
-    setIsPlaying(false);
-  };
-
-  const handleReset = () => {
+  const handleReset = async () => {
+    await fetch(`${API_BASE_URL}/simulation/reset`, { method: "POST" });
+    if (wsRef.current) wsRef.current.close();
     setIsPlaying(false);
     setCurrentStep(0);
     setTimeline([]);
+    setConvergenceHistory([]);
     setHistoryQueues([]);
     setHistoryWaitTimes([]);
+    setTelemetryState({
+      fitness: 0.0,
+      best_fitness: 0.0,
+      current_optimizer: "GA",
+      runtime: 0.0,
+      green_times: [30, 30, 30, 30],
+      cycle_time: 120,
+      avg_speed: 1.8,
+      avg_density: 160.0,
+      avg_wait_time: 4500.0,
+      total_flow: 0.0,
+      avg_queue_length: 0.0,
+      congestion_pressure: 160.0
+    });
+    setAsmState(null);
   };
 
-  const handleComplete = () => {
-    const newRun = {
-      id: Date.now(),
-      timestamp: new Date().toLocaleTimeString(),
-      dataset: selectedDataset,
-      algorithm: selectedAlgo,
-      runtime: ((maxSteps * 1.2) / speed).toFixed(1) + "s",
-      bestFitness: algoData.fitness.toFixed(5),
-      iterations: maxSteps,
-      avgDelay: (algoData.avg_wait_time || 0).toFixed(1) + "s",
-      queueLength: (algoData.avg_queue_length || 0).toFixed(1)
-    };
-
-    setRunHistory(prev => {
-      const updated = [newRun, ...prev].slice(0, 10);
-      localStorage.setItem("navi_run_history", JSON.stringify(updated));
-      return updated;
-    });
-
-    setTimeline(prev => [
-      ...prev,
-      `[System] Simulation complete. Standardized results serialized.`,
-      `[System] Saved run metrics to local database history.`
-    ]);
+  const handleSpeedChange = async (s) => {
+    setSpeed(s);
+    await fetch(`${API_BASE_URL}/simulation/speed?multiplier=${s}`, { method: "POST" });
+    if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+      wsRef.current.send(JSON.stringify({ command: "speed", value: s }));
+    }
   };
 
   // Live Stats handler
@@ -215,7 +208,7 @@ export const Simulation = () => {
     setLiveMetrics(stats);
     if (isPlaying) {
       setHistoryQueues(prev => [...prev, stats.queue].slice(-30));
-      setHistoryWaitTimes(prev => [...prev, currentWaitTime].slice(-30));
+      setHistoryWaitTimes(prev => [...prev, telemetryState.avg_wait_time].slice(-30));
     }
   };
 
@@ -225,13 +218,13 @@ export const Simulation = () => {
       algorithm: selectedAlgo,
       dataset: selectedDataset,
       metrics: {
-        fitness: algoData.fitness,
-        avg_wait_time: algoData.avg_wait_time,
-        congestion_pressure: algoData.congestion_pressure,
-        total_flow: algoData.total_flow,
-        avg_queue_length: algoData.avg_queue_length,
+        fitness: telemetryState.fitness,
+        avg_wait_time: telemetryState.avg_wait_time,
+        congestion_pressure: telemetryState.congestion_pressure,
+        total_flow: telemetryState.total_flow,
+        avg_queue_length: telemetryState.avg_queue_length,
       },
-      convergence_history: algoData.convergence_history,
+      convergence_history: convergenceHistory,
       timestamp: new Date().toISOString()
     };
     const jsonString = `data:text/json;charset=utf-8,${encodeURIComponent(
@@ -239,19 +232,19 @@ export const Simulation = () => {
     )}`;
     const downloadAnchor = document.createElement("a");
     downloadAnchor.setAttribute("href", jsonString);
-    downloadAnchor.setAttribute("download", `navi_${selectedAlgo.toLowerCase()}_results.json`);
+    downloadAnchor.setAttribute("download", `navi_${selectedAlgo.toLowerCase()}_live_results.json`);
     document.body.appendChild(downloadAnchor);
     downloadAnchor.click();
     downloadAnchor.remove();
   };
 
-  // Reload previous runs
+  // Reopen runs
   const loadPreviousRun = (run) => {
     setSelectedAlgo(run.algorithm);
     setSelectedDataset(run.dataset);
     setCurrentStep(run.iterations - 1);
     setTimeline([
-      `[History] Reopened simulation run from execution history list.`,
+      `[History] Reopened simulation run from uvicorn server.`,
       `[History] Loaded final fitness: ${run.bestFitness} config.`
     ]);
   };
@@ -262,7 +255,7 @@ export const Simulation = () => {
         <PageHeader
           eyebrow="Simulation Workspace"
           title="Optimization Simulator"
-          description="Interactive testbed to run signal optimizations, monitor vehicular flow dynamics, and observe strategy shifts in real-time."
+          description="Interactive testbed connected to uvicorn API. Run signal optimizations, monitor traffic updates, and observe strategy shifts live."
         />
 
         {/* Top Control Panel */}
@@ -282,7 +275,6 @@ export const Simulation = () => {
               <option value="ACO">Ant Colony (ACO)</option>
               <option value="SA">Simulated Annealing (SA)</option>
               <option value="ASM">Adaptive switching (ASM)</option>
-              <option value="HYBRID">Triple Hybrid (ACO-SA-GA)</option>
             </select>
           </div>
 
@@ -295,8 +287,6 @@ export const Simulation = () => {
               className="bg-zinc-900 border border-zinc-800 text-xs rounded-lg p-2 text-zinc-100 focus:outline-none"
             >
               <option value="vanet.csv">vanet.csv (Default)</option>
-              <option value="scenario_heavy.csv" disabled>scenario_heavy.csv (Coming Soon)</option>
-              <option value="scenario_light.csv" disabled>scenario_light.csv (Coming Soon)</option>
             </select>
           </div>
 
@@ -306,7 +296,7 @@ export const Simulation = () => {
               {[1, 2, 4].map((s) => (
                 <button
                   key={s}
-                  onClick={() => setSpeed(s)}
+                  onClick={() => handleSpeedChange(s)}
                   className={`flex-1 text-xs py-2 rounded-lg border transition-all ${
                     speed === s 
                       ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400 font-semibold" 
@@ -364,18 +354,18 @@ export const Simulation = () => {
               </span>
               
               <SimulationCanvas
-                greenTimes={currentGreenTimes}
+                greenTimes={telemetryState.green_times}
                 themeColor={selectedAlgo === "ASM" ? "#3b82f6" : "#10b981"}
-                pressure={currentPressure}
-                avgSpeed={currentSpeed}
+                pressure={telemetryState.congestion_pressure}
+                avgSpeed={telemetryState.avg_speed}
                 speedMultiplier={speed}
                 onStatsUpdate={handleStatsUpdate}
               />
 
               {/* Lane Phase Countdown Indicators */}
               <div className="grid grid-cols-4 gap-2 mt-4">
-                {currentGreenTimes.map((gt, i) => {
-                  const active = liveMetrics.remainingTime > 0 && currentGreenTimes.indexOf(gt) === i;
+                {telemetryState.green_times.map((gt, i) => {
+                  const active = liveMetrics.remainingTime > 0 && telemetryState.green_times.indexOf(gt) === i;
                   return (
                     <div 
                       key={i} 
@@ -386,7 +376,7 @@ export const Simulation = () => {
                       }`}
                     >
                       <span className="text-[8px] uppercase tracking-wider">Lane {i+1}</span>
-                      <span className="text-sm font-bold font-mono">{gt}s</span>
+                      <span className="text-sm font-bold font-mono">{gt.toFixed(1)}s</span>
                     </div>
                   );
                 })}
@@ -402,14 +392,13 @@ export const Simulation = () => {
                 </span>
                 <div className="h-44 w-full bg-zinc-950 border border-zinc-900 rounded-lg flex items-end justify-center px-4 pt-6 relative overflow-hidden">
                   <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
-                    {/* SVG Line mapping convergence values */}
                     <polyline
                       fill="none"
                       stroke={selectedAlgo === "ASM" ? "#3b82f6" : "#10b981"}
                       strokeWidth="2"
-                      points={algoData.convergence_history.slice(0, currentStep + 1).map((v, idx) => {
-                        const min = Math.min(...algoData.convergence_history);
-                        const max = Math.max(...algoData.convergence_history);
+                      points={convergenceHistory.map((v, idx) => {
+                        const min = Math.min(...convergenceHistory, -0.34);
+                        const max = Math.max(...convergenceHistory, -0.15);
                         const x = (idx / (maxSteps - 1)) * 100;
                         const y = 90 - ((v - min) / (max - min || 1)) * 80;
                         return `${x},${y}`;
@@ -420,7 +409,7 @@ export const Simulation = () => {
                     Step {currentStep} / {maxSteps - 1}
                   </div>
                   <div className="absolute top-2 right-2 text-[8px] font-mono text-zinc-400">
-                    Fit: {algoData.convergence_history[currentStep]?.toFixed(4)}
+                    Fit: {telemetryState.fitness.toFixed(5)}
                   </div>
                 </div>
               </GlassCard>
@@ -465,27 +454,27 @@ export const Simulation = () => {
 
               <div className="grid grid-cols-2 gap-3 text-xs">
                 <div className="bg-zinc-900/60 p-2.5 rounded-lg border border-zinc-800/80">
-                  <span className="text-[8px] text-zinc-500 uppercase block mb-0.5">Algorithm</span>
-                  <span className="text-zinc-200 font-semibold font-mono">{selectedAlgo}</span>
+                  <span className="text-[8px] text-zinc-500 uppercase block mb-0.5">Active Optimizer</span>
+                  <span className="text-zinc-200 font-semibold font-mono">{telemetryState.current_optimizer}</span>
                 </div>
                 <div className="bg-zinc-900/60 p-2.5 rounded-lg border border-zinc-800/80">
-                  <span className="text-[8px] text-zinc-500 uppercase block mb-0.5">Step / Iteration</span>
+                  <span className="text-[8px] text-zinc-500 uppercase block mb-0.5">Iteration Step</span>
                   <span className="text-zinc-200 font-semibold font-mono">{currentStep} / {maxSteps - 1}</span>
                 </div>
                 <div className="bg-zinc-900/60 p-2.5 rounded-lg border border-zinc-800/80">
                   <span className="text-[8px] text-zinc-500 uppercase block mb-0.5">Best Fitness</span>
                   <span className="text-emerald-400 font-semibold font-mono">
-                    {algoData.convergence_history[currentStep]?.toFixed(4)}
+                    {telemetryState.best_fitness.toFixed(5)}
                   </span>
                 </div>
                 <div className="bg-zinc-900/60 p-2.5 rounded-lg border border-zinc-800/80">
-                  <span className="text-[8px] text-zinc-500 uppercase block mb-0.5">Mean Latency</span>
-                  <span className="text-zinc-200 font-semibold font-mono">{currentWaitTime.toFixed(1)}s</span>
+                  <span className="text-[8px] text-zinc-500 uppercase block mb-0.5">Average Wait</span>
+                  <span className="text-zinc-200 font-semibold font-mono">{telemetryState.avg_wait_time.toFixed(1)}s</span>
                 </div>
               </div>
 
               {/* ASM specific monitoring dashboard */}
-              {(selectedAlgo === "ASM" || selectedAlgo === "HYBRID") && asmState && (
+              {(selectedAlgo === "ASM") && asmState && (
                 <div className="bg-zinc-900/40 border border-zinc-800 rounded-xl p-3 flex flex-col gap-3 text-xs mt-2 animate-in fade-in duration-200">
                   <span className="text-[8px] text-blue-400 uppercase tracking-wider block font-bold font-mono">
                     ASM Controller Diagnostics
@@ -571,7 +560,7 @@ export const Simulation = () => {
             {runHistory.length > 0 && (
               <GlassCard className="flex flex-col gap-3 border-zinc-900" hover={false} padding="sm">
                 <span className="text-[9px] uppercase tracking-wider text-zinc-500 font-bold block border-b border-zinc-900 pb-2">
-                  Execution History
+                  Server Execution History
                 </span>
                 <div className="flex flex-col gap-1.5 max-h-[160px] overflow-y-auto pr-1 custom-scrollbar">
                   {runHistory.map((run) => (
