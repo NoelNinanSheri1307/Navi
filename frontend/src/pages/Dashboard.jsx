@@ -1,24 +1,23 @@
-import React, { useState, useMemo, useCallback, useEffect } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
-  ArrowLeft, 
-  LayoutGrid, 
-  Layers, 
-  Activity, 
   TrendingUp, 
   Clock, 
   Globe, 
   Zap, 
   ShieldCheck, 
   AlertCircle, 
-  RefreshCw 
+  RefreshCw,
+  Activity,
+  RotateCcw,
+  CheckCircle,
+  Database
 } from "lucide-react";
 
 import AlgorithmCard, { ALGO_THEMES } from "../components/AlgorithmCard";
-import SimulationCanvas from "../components/SimulationCanvas";
-import HUDPanel from "../components/HUDPanel";
 import rawData from "../data/data.json";
 import { APP_CONFIG, FUZZY_SYSTEM_CONFIG } from "../config/constants";
+import { API_BASE_URL } from "../config/api";
 import { GlassCard } from "../components/ui/GlassCard";
 import { Badge } from "../components/ui/Badge";
 
@@ -54,17 +53,50 @@ const Dashboard = ({ onBack, onThemeChange }) => {
   }, []);
 
   const [selectedAlgo, setSelectedAlgo] = useState("GA");
-  const [liveStats, setLiveStats] = useState({ queue: 0, throughput: 0, activeCars: 0, remainingTime: 0, fps: 60 });
   const [isDataLoaded, setIsDataLoaded] = useState(false);
+
+  // Diagnostic states
+  const [healthStatus, setHealthStatus] = useState({ status: "offline", platform: "unknown", active_modules: [] });
+  const [backendStatus, setBackendStatus] = useState({ running: false, active_algorithm: "None", speed_multiplier: 1.0 });
+  const [recentHistory, setRecentHistory] = useState([]);
+  const [actionTimeline, setActionTimeline] = useState([]);
 
   useEffect(() => {
     const timer = setTimeout(() => setIsDataLoaded(true), 200);
     return () => clearTimeout(timer);
   }, []);
 
-  const handleStatsUpdate = useCallback((stats) => {
-    setLiveStats(stats);
+  useEffect(() => {
+    fetch(`${API_BASE_URL}/health`)
+      .then(res => res.json())
+      .then(data => setHealthStatus(data))
+      .catch(() => {});
+      
+    fetch(`${API_BASE_URL}/simulation/status`)
+      .then(res => res.json())
+      .then(data => setBackendStatus(data))
+      .catch(() => {});
+
+    fetch(`${API_BASE_URL}/simulation/history`)
+      .then(res => res.json())
+      .then(data => setRecentHistory(data))
+      .catch(() => {});
   }, []);
+
+  const handleAction = async (actionType) => {
+    const timestamp = new Date().toLocaleTimeString();
+    if (actionType === "clear_cache") {
+      try {
+        await fetch(`${API_BASE_URL}/simulation/reset`, { method: "POST" });
+        setRecentHistory([]);
+        setActionTimeline(prev => [`[${timestamp}] Reset server memory state arrays.`, ...prev]);
+      } catch (e) {
+        setActionTimeline(prev => [`[${timestamp}] Reset failed: ${e.message}`, ...prev]);
+      }
+    } else if (actionType === "run_benchmark") {
+      setActionTimeline(prev => [`[${timestamp}] Launch benchmark trials on backend command line.`, ...prev]);
+    }
+  };
 
   const currentResult = processedData[selectedAlgo];
   const theme = EXTENDED_THEMES[selectedAlgo] || EXTENDED_THEMES.GA;
@@ -164,7 +196,7 @@ const Dashboard = ({ onBack, onThemeChange }) => {
                     Scientific Benchmark Suite
                   </span>
                   <h3 className="text-2xl sm:text-4xl md:text-5xl uppercase tracking-tight text-zinc-100 font-normal">
-                    Global Kernel Performance
+                    Global Performance Benchmarks
                   </h3>
                 </div>
 
@@ -256,25 +288,131 @@ const Dashboard = ({ onBack, onThemeChange }) => {
                   </div>
                 </div>
 
-                {/* Simulation Canvas + HUD Stack */}
-                <div className="flex flex-col xl:flex-row gap-6 sm:gap-8">
-                  <div className="flex-1 bg-black/80 p-3 sm:p-4 rounded-2xl border border-zinc-900 backdrop-blur-md relative shadow-2xl overflow-hidden">
-                    <SimulationCanvas
-                      greenTimes={currentResult.green_times}
-                      themeColor={theme.color}
-                      pressure={currentResult.congestion_pressure}
-                      avgSpeed={currentResult.avg_speed / 4.5}
-                      onStatsUpdate={handleStatsUpdate}
-                    />
-                    <div key={selectedAlgo + "_phase_hud"} className="mt-3 flex flex-wrap gap-2 justify-center sm:justify-start">
-                      {currentResult.green_times.map((gt, i) => (
-                        <div key={i} className="px-2.5 py-1 bg-zinc-900/60 backdrop-blur-md rounded-lg text-[10px] sm:text-xs text-zinc-400 border border-zinc-800 uppercase tracking-tight font-mono">
-                          Lane {i + 1}: <span className="text-zinc-200 font-bold">{gt}s</span>
+                {/* Dashboard Operations Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                  
+                  {/* Latest Run */}
+                  <GlassCard className="flex flex-col gap-3 border-zinc-900" hover={false}>
+                    <span className="text-[9px] uppercase tracking-wider text-zinc-500 font-bold block border-b border-zinc-900 pb-2 mb-1">
+                      Latest Run Metrics
+                    </span>
+                    {recentHistory.length > 0 ? (
+                      <div className="flex flex-col gap-2 text-xs font-mono">
+                        <div className="flex justify-between">
+                          <span className="text-zinc-500">Algorithm:</span>
+                          <span className="text-zinc-200 font-bold">{recentHistory[0].algorithm}</span>
                         </div>
-                      ))}
+                        <div className="flex justify-between">
+                          <span className="text-zinc-500">Best Fitness:</span>
+                          <span className="text-emerald-400 font-bold">{recentHistory[0].bestFitness}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-zinc-500">Avg Delay:</span>
+                          <span className="text-zinc-300">{recentHistory[0].avgDelay}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-zinc-500">Queue Length:</span>
+                          <span className="text-zinc-300">{recentHistory[0].queueLength}</span>
+                        </div>
+                      </div>
+                    ) : (
+                      <span className="text-xs text-zinc-500">No simulation runs executed yet.</span>
+                    )}
+                  </GlassCard>
+
+                  {/* Backend Status */}
+                  <GlassCard className="flex flex-col gap-3 border-zinc-900" hover={false}>
+                    <span className="text-[9px] uppercase tracking-wider text-zinc-500 font-bold block border-b border-zinc-900 pb-2 mb-1">
+                      Backend Status
+                    </span>
+                    <div className="flex flex-col gap-2 text-xs">
+                      <div className="flex justify-between items-center font-mono">
+                        <span className="text-zinc-500">Status State:</span>
+                        <div className="flex items-center gap-1.5">
+                          <span className={`w-1.5 h-1.5 rounded-full ${backendStatus.running ? "bg-emerald-400 animate-pulse" : "bg-zinc-600"}`} />
+                          <span className="text-zinc-200">{backendStatus.running ? "Running" : "Idle"}</span>
+                        </div>
+                      </div>
+                      <div className="flex justify-between font-mono">
+                        <span className="text-zinc-500">Active Task:</span>
+                        <span className="text-zinc-300">{backendStatus.active_algorithm || "None"}</span>
+                      </div>
+                      <div className="flex justify-between font-mono">
+                        <span className="text-zinc-500">Speed:</span>
+                        <span className="text-zinc-300">{backendStatus.speed_multiplier}x</span>
+                      </div>
                     </div>
-                  </div>
-                  <HUDPanel stats={liveStats} metrics={currentResult} color={theme.color} />
+                  </GlassCard>
+
+                  {/* System Health */}
+                  <GlassCard className="flex flex-col gap-3 border-zinc-900" hover={false}>
+                    <span className="text-[9px] uppercase tracking-wider text-zinc-500 font-bold block border-b border-zinc-900 pb-2 mb-1">
+                      System Health
+                    </span>
+                    <div className="flex flex-col gap-2 text-xs font-mono">
+                      <div className="flex justify-between">
+                        <span className="text-zinc-500">Service:</span>
+                        <span className="text-emerald-400 font-bold">{healthStatus.status === "healthy" ? "ONLINE" : "OFFLINE"}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-zinc-500">Platform:</span>
+                        <span className="text-zinc-300 truncate max-w-[120px]">{healthStatus.platform || "unknown"}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-zinc-500">Server PID:</span>
+                        <span className="text-zinc-300">{healthStatus.server_pid || "N/A"}</span>
+                      </div>
+                    </div>
+                  </GlassCard>
+
+                  {/* Recent Benchmark */}
+                  <GlassCard className="flex flex-col gap-3 border-zinc-900" hover={false}>
+                    <span className="text-[9px] uppercase tracking-wider text-zinc-500 font-bold block border-b border-zinc-900 pb-2 mb-1">
+                      Recent Benchmark
+                    </span>
+                    {processedData.ASM ? (
+                      <div className="flex flex-col gap-2 text-xs font-mono">
+                        <div className="flex justify-between">
+                          <span className="text-zinc-500">Best Strategy:</span>
+                          <span className="text-zinc-100 font-bold">ASM</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-zinc-500">Optimal Fitness:</span>
+                          <span className="text-emerald-400 font-semibold">{processedData.ASM.fitness.toFixed(5)}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-zinc-500">Mean Wait:</span>
+                          <span className="text-zinc-300">{processedData.ASM.avg_wait.toFixed(1)}s</span>
+                        </div>
+                      </div>
+                    ) : (
+                      <span className="text-xs text-zinc-500">Awaiting benchmark results dataset...</span>
+                    )}
+                  </GlassCard>
+
+                  {/* Quick Actions */}
+                  <GlassCard className="flex flex-col gap-3 border-zinc-900 md:col-span-2" hover={false}>
+                    <span className="text-[9px] uppercase tracking-wider text-zinc-500 font-bold block border-b border-zinc-900 pb-2 mb-1">
+                      Quick Operations Actions
+                    </span>
+                    <div className="flex flex-wrap gap-2 mt-1">
+                      <button 
+                        onClick={() => handleAction("run_benchmark")} 
+                        className="px-3 py-1.5 rounded-lg border border-zinc-800 bg-zinc-900 hover:bg-zinc-800 text-xs font-semibold text-zinc-200 transition-all flex items-center gap-1.5"
+                      >
+                        <Activity size={12} />
+                        Run Baseline CLI
+                      </button>
+                      <button 
+                        onClick={() => handleAction("clear_cache")} 
+                        className="px-3 py-1.5 rounded-lg border border-zinc-800 bg-zinc-900 hover:bg-zinc-800 text-xs font-semibold text-zinc-200 transition-all flex items-center gap-1.5"
+                      >
+                        <RotateCcw size={12} />
+                        Clear Server Cache
+                      </button>
+                    </div>
+                  </GlassCard>
+
                 </div>
 
                 {/* Specs and Charts Grid */}

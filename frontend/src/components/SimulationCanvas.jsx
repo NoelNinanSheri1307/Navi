@@ -20,6 +20,7 @@ const SimulationCanvas = ({
     speedRef.current = speedMultiplier;
   }, [speedMultiplier]);
 
+  // 1. Initial Instantiation on Canvas mount
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -58,8 +59,17 @@ const SimulationCanvas = ({
 
     requestRef.current = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(requestRef.current);
-  }, [greenTimes, themeColor, onStatsUpdate, pressure, avgSpeed]);
+  }, []); // Empty dependencies array prevents deletion and resetting of variables!
 
+  // 2. Dynamically apply parameter updates without wiping state
+  useEffect(() => {
+    if (simRef.current) {
+      simRef.current.greenTimes = greenTimes;
+      simRef.current.themeColor = themeColor;
+      simRef.current.pressure = pressure;
+      simRef.current.maxSpeed = Math.max(1.5, Math.min(5.0, avgSpeed));
+    }
+  }, [greenTimes, themeColor, pressure, avgSpeed]);
 
   useEffect(() => {
     if (simRef.current) {

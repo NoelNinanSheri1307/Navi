@@ -167,14 +167,8 @@ export const Layout = ({ children, activePage, onNavigate }) => {
             <span className="sm:hidden text-xs text-zinc-200 font-medium">{activeItem.label}</span>
           </div>
 
-          {/* Right section: Search bar & Status */}
+          {/* Right section: Status */}
           <div className="flex items-center gap-4">
-            {/* Global Search Placeholder */}
-            <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-zinc-900/60 border border-zinc-800/80 text-zinc-500 text-xs w-48 select-none">
-              <Search size={12} className="text-zinc-500" />
-              <span>Search modules...</span>
-              <span className="ml-auto bg-zinc-850 px-1 py-0.5 rounded text-[8px] text-zinc-400 border border-zinc-800">⌘K</span>
-            </div>
 
             {/* Telemetry Status Indicator */}
             <div className="flex items-center gap-2 px-2.5 py-1 rounded-full bg-zinc-950 border border-zinc-900 text-[10px] uppercase tracking-wider text-zinc-400">
