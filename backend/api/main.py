@@ -32,7 +32,16 @@ app = FastAPI(
 
 def get_cors_origins():
     raw_origins = os.getenv("CORS_ORIGINS", "http://localhost:5173,http://localhost:3000")
-    return [origin.strip() for origin in raw_origins.split(",") if origin.strip()]
+    origins = []
+    for origin in raw_origins.split(","):
+        origin = origin.strip()
+        if origin:
+            # Browsers send the Origin header without trailing slashes. 
+            # Strip them here to ensure exact string matching in CORSMiddleware.
+            if origin.endswith("/"):
+                origin = origin[:-1]
+            origins.append(origin)
+    return origins
 
 
 # Enable CORS for frontend clients (Vite dev servers and deployed Vercel/Render fronts)
