@@ -7,5 +7,6 @@ python-dotenv>=1.0.0
 python-multipart==0.0.20
 numpy>=1.24
 pandas>=2.0
+scipy>=1.11
 scikit-fuzzy>=0.4.2
 networkx>=3.0       # required by scikit-fuzzy
