@@ -45,19 +45,32 @@ class DatasetLoader:
             Validated dataset dataframe.
         """
         with cls._instance_lock:
-            if cls._cached_df is not None and cls._current_path == os.path.abspath(csv_path):
-                return cls._cached_df
+            # Resolve the dataset path absolutely relative to the module structure
+            datasets_module_dir = os.path.dirname(os.path.abspath(__file__))  # backend/datasets/
+            project_root_dir = os.path.dirname(os.path.dirname(datasets_module_dir))  # Navi/
 
-            abs_path = os.path.abspath(csv_path)
-            if not os.path.isfile(abs_path):
-                # Check parent directory fallback
-                alt = os.path.join(os.path.dirname(abs_path), "..", "vanet.csv")
-                if os.path.isfile(alt):
-                    abs_path = os.path.abspath(alt)
-                else:
-                    raise FileNotFoundError(
-                        f"VANET dataset file not found at '{csv_path}' or '{alt}'."
-                    )
+            possible_paths = [
+                os.path.abspath(csv_path),
+                os.path.join(datasets_module_dir, csv_path),
+                os.path.join(project_root_dir, csv_path),
+            ]
+
+            resolved_path = None
+            for p in possible_paths:
+                if os.path.isfile(p):
+                    resolved_path = p
+                    break
+
+            if not resolved_path:
+                checked = ", ".join(f"'{p}'" for p in possible_paths)
+                raise FileNotFoundError(
+                    f"VANET dataset file '{csv_path}' could not be resolved. Checked: {checked}"
+                )
+
+            abs_path = resolved_path
+
+            if cls._cached_df is not None and cls._current_path == abs_path:
+                return cls._cached_df
 
             df = pd.read_csv(abs_path, sep=",", engine="python")
 

@@ -118,18 +118,29 @@ class SimulationService:
             self.active_algorithm = algorithm.upper()
             self.active_dataset = dataset
             
-            # Resolve dataset path
-            csv_path = dataset
-            if not os.path.isfile(csv_path):
-                alt = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", dataset)
-                if os.path.isfile(alt):
-                    csv_path = alt
-                else:
-                    alt_root = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "..", "vanet.csv")
-                    if os.path.isfile(alt_root):
-                        csv_path = alt_root
-                    else:
-                        raise FileNotFoundError(f"Dataset path '{dataset}' could not be resolved.")
+            # Resolve dataset path absolutely relative to module structure
+            backend_datasets_dir = os.path.abspath(
+                os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "datasets")
+            )
+            project_root_dir = os.path.dirname(os.path.dirname(backend_datasets_dir))  # Navi/
+
+            possible_paths = [
+                os.path.abspath(dataset),
+                os.path.join(backend_datasets_dir, dataset),
+                os.path.join(project_root_dir, dataset),
+            ]
+
+            csv_path = None
+            for p in possible_paths:
+                if os.path.isfile(p):
+                    csv_path = p
+                    break
+
+            if not csv_path:
+                checked = ", ".join(f"'{p}'" for p in possible_paths)
+                raise FileNotFoundError(
+                    f"Dataset path '{dataset}' could not be resolved. Checked: {checked}"
+                )
 
             # Spawn runner thread
             self.run_thread = threading.Thread(

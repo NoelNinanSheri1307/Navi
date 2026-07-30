@@ -4,15 +4,23 @@ import pandas as pd
 
 router = APIRouter(prefix="/datasets", tags=["Datasets"])
 
-DATASETS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..")
+DATASETS_DIR = os.path.abspath(
+    os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "datasets")
+)
+PROJECT_ROOT_DIR = os.path.dirname(os.path.dirname(DATASETS_DIR))
 
 def get_resolved_path(filename: str) -> str:
+    # 1. Check in absolute backend/datasets/ folder
     path = os.path.join(DATASETS_DIR, filename)
     if os.path.isfile(path):
         return path
-    alt = os.path.join(DATASETS_DIR, "backend", "datasets", filename)
+    # 2. Check in project root folder
+    alt = os.path.join(PROJECT_ROOT_DIR, filename)
     if os.path.isfile(alt):
         return alt
+    # 3. Check absolute path
+    if os.path.isabs(filename) and os.path.isfile(filename):
+        return filename
     return None
 
 @router.get("")
