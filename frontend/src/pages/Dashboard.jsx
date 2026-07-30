@@ -10,8 +10,7 @@ import {
   RefreshCw,
   Activity,
   RotateCcw,
-  CheckCircle,
-  Database
+  Layers
 } from "lucide-react";
 
 import AlgorithmCard, { ALGO_THEMES } from "../components/AlgorithmCard";
@@ -55,14 +54,14 @@ const Dashboard = ({ onBack, onThemeChange }) => {
   const [selectedAlgo, setSelectedAlgo] = useState("GA");
   const [isDataLoaded, setIsDataLoaded] = useState(false);
 
-  // Diagnostic states
-  const [healthStatus, setHealthStatus] = useState({ status: "offline", platform: "unknown", active_modules: [] });
+  // Dynamic server tracking states
+  const [healthStatus, setHealthStatus] = useState({ status: "offline", platform: "unknown", server_pid: "N/A" });
   const [backendStatus, setBackendStatus] = useState({ running: false, active_algorithm: "None", speed_multiplier: 1.0 });
   const [recentHistory, setRecentHistory] = useState([]);
   const [actionTimeline, setActionTimeline] = useState([]);
 
   useEffect(() => {
-    const timer = setTimeout(() => setIsDataLoaded(true), 200);
+    const timer = setTimeout(() => setIsDataLoaded(true), 150);
     return () => clearTimeout(timer);
   }, []);
 
@@ -110,9 +109,9 @@ const Dashboard = ({ onBack, onThemeChange }) => {
   // Loading State
   if (!isDataLoaded) {
     return (
-      <div className="flex-1 min-h-[70vh] bg-black flex flex-col items-center justify-center p-6 text-center gap-4">
+      <div className="flex-grow min-h-screen bg-black flex flex-col items-center justify-center p-6 text-center gap-4">
         <RefreshCw className="animate-spin text-emerald-400" size={32} />
-        <p className="text-xs uppercase tracking-widest text-zinc-500 font-semibold">Initializing Navi Analytics Dashboard...</p>
+        <p className="text-xs uppercase tracking-widest text-zinc-500 font-semibold font-mono">Loading Dashboard Workspace...</p>
       </div>
     );
   }
@@ -120,7 +119,7 @@ const Dashboard = ({ onBack, onThemeChange }) => {
   // Empty State / Fallback
   if (Object.keys(processedData).length === 0) {
     return (
-      <div className="flex-1 min-h-[70vh] bg-black flex flex-col items-center justify-center p-6 text-center gap-4">
+      <div className="flex-grow min-h-screen bg-black flex flex-col items-center justify-center p-6 text-center gap-4">
         <AlertCircle className="text-rose-400" size={40} />
         <h2 className="text-xl uppercase tracking-tight text-zinc-200">No Telemetry Data Found</h2>
         <p className="text-xs text-zinc-500 max-w-md">Please execute the backend benchmark pipeline to generate valid data output.</p>
@@ -132,12 +131,12 @@ const Dashboard = ({ onBack, onThemeChange }) => {
   }
 
   return (
-    <div className="w-full flex flex-col p-4 sm:p-6 lg:p-8 gap-6 sm:gap-8 text-zinc-100 relative items-center overflow-x-hidden">
+    <div className="w-full min-h-screen bg-black flex flex-col p-4 sm:p-6 lg:p-8 gap-6 sm:gap-8 text-zinc-100 relative items-center overflow-x-hidden">
       
       {/* Dashboard Sub-Header */}
       <div className="w-full max-w-[1600px] flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-900 pb-6 mb-2">
         <div className="flex flex-col">
-          <span className="text-[10px] uppercase tracking-[0.25em] text-zinc-500 font-semibold">
+          <span className="text-[10px] uppercase tracking-[0.25em] text-zinc-500 font-semibold font-mono">
             Optimization Workspace & Mamdani FIS
           </span>
           <h2 className="text-xl sm:text-3xl tracking-tight uppercase text-zinc-100 font-normal">
@@ -192,7 +191,7 @@ const Dashboard = ({ onBack, onThemeChange }) => {
                 className="flex flex-col gap-6 sm:gap-8 lg:gap-10"
               >
                 <div className="flex flex-col gap-1">
-                  <span className="text-[10px] sm:text-xs uppercase tracking-[0.25em] text-zinc-500">
+                  <span className="text-[10px] sm:text-xs uppercase tracking-[0.25em] text-zinc-500 font-mono">
                     Scientific Benchmark Suite
                   </span>
                   <h3 className="text-2xl sm:text-4xl md:text-5xl uppercase tracking-tight text-zinc-100 font-normal">
@@ -223,7 +222,7 @@ const Dashboard = ({ onBack, onThemeChange }) => {
                 className="flex flex-col gap-6 sm:gap-8 lg:gap-10"
               >
                 <div className="flex flex-col gap-1">
-                  <span className="text-[10px] sm:text-xs uppercase tracking-[0.25em] text-zinc-500 font-semibold">
+                  <span className="text-[10px] sm:text-xs uppercase tracking-[0.25em] text-zinc-500 font-semibold font-mono">
                     Mamdani FIS Configuration
                   </span>
                   <h3 className="text-2xl sm:text-4xl md:text-5xl uppercase tracking-tight text-blue-400 font-normal">
@@ -262,7 +261,7 @@ const Dashboard = ({ onBack, onThemeChange }) => {
                   </div>
                 </div>
               </motion.div>
-            ) : currentResult ? (
+            ) : (
               <motion.div
                 key={selectedAlgo}
                 initial={{ opacity: 0, scale: 0.995 }}
@@ -270,10 +269,10 @@ const Dashboard = ({ onBack, onThemeChange }) => {
                 exit={{ opacity: 0, y: -10 }}
                 className="flex flex-col gap-6 sm:gap-8 lg:gap-10"
               >
-                {/* Header */}
+                {/* Header with safe optional chaining checks */}
                 <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2 border-b border-zinc-900 pb-4">
                   <div className="flex flex-col">
-                    <span className="text-[10px] sm:text-xs uppercase tracking-[0.25em] text-zinc-500">
+                    <span className="text-[10px] sm:text-xs uppercase tracking-[0.25em] text-zinc-500 font-mono">
                       Search Kernel Model
                     </span>
                     <h3 className="text-3xl sm:text-5xl md:text-6xl uppercase tracking-tight leading-none font-normal" style={{ color: theme.color }}>
@@ -283,80 +282,55 @@ const Dashboard = ({ onBack, onThemeChange }) => {
                   <div className="flex items-baseline gap-2 sm:flex-col sm:items-end">
                     <span className="text-[10px] uppercase tracking-widest text-zinc-500 font-medium">Optimization Score</span>
                     <span className="text-2xl sm:text-4xl uppercase tracking-tight font-semibold" style={{ color: theme.color }}>
-                      {currentResult.perfScore}%
+                      {currentResult?.perfScore || "0.0"}%
                     </span>
                   </div>
                 </div>
 
-                {/* Dashboard Operations Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                {/* Operations & Environment status panels */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   
-                  {/* Latest Run */}
+                  {/* Latest Run panel */}
                   <GlassCard className="flex flex-col gap-3 border-zinc-900" hover={false}>
-                    <span className="text-[9px] uppercase tracking-wider text-zinc-500 font-bold block border-b border-zinc-900 pb-2 mb-1">
+                    <span className="text-[9px] uppercase tracking-wider text-zinc-500 font-bold block border-b border-zinc-900 pb-2 font-mono">
                       Latest Run Metrics
                     </span>
-                    {recentHistory.length > 0 ? (
+                    {recentHistory && recentHistory.length > 0 ? (
                       <div className="flex flex-col gap-2 text-xs font-mono">
                         <div className="flex justify-between">
                           <span className="text-zinc-500">Algorithm:</span>
-                          <span className="text-zinc-200 font-bold">{recentHistory[0].algorithm}</span>
+                          <span className="text-zinc-200 font-bold">{recentHistory[0]?.algorithm || "N/A"}</span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-zinc-500">Best Fitness:</span>
-                          <span className="text-emerald-400 font-bold">{recentHistory[0].bestFitness}</span>
+                          <span className="text-zinc-500">Fitness:</span>
+                          <span className="text-emerald-400 font-bold">{recentHistory[0]?.bestFitness || "0.000"}</span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-zinc-500">Avg Delay:</span>
-                          <span className="text-zinc-300">{recentHistory[0].avgDelay}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-zinc-500">Queue Length:</span>
-                          <span className="text-zinc-300">{recentHistory[0].queueLength}</span>
+                          <span className="text-zinc-500">Delay:</span>
+                          <span className="text-zinc-300">{recentHistory[0]?.avgDelay || "0.0s"}</span>
                         </div>
                       </div>
                     ) : (
-                      <span className="text-xs text-zinc-500">No simulation runs executed yet.</span>
+                      <span className="text-xs text-zinc-500 font-mono">No simulator runs executed yet.</span>
                     )}
                   </GlassCard>
 
-                  {/* Backend Status */}
+                  {/* Environment Status panel */}
                   <GlassCard className="flex flex-col gap-3 border-zinc-900" hover={false}>
-                    <span className="text-[9px] uppercase tracking-wider text-zinc-500 font-bold block border-b border-zinc-900 pb-2 mb-1">
-                      Backend Status
-                    </span>
-                    <div className="flex flex-col gap-2 text-xs">
-                      <div className="flex justify-between items-center font-mono">
-                        <span className="text-zinc-500">Status State:</span>
-                        <div className="flex items-center gap-1.5">
-                          <span className={`w-1.5 h-1.5 rounded-full ${backendStatus.running ? "bg-emerald-400 animate-pulse" : "bg-zinc-600"}`} />
-                          <span className="text-zinc-200">{backendStatus.running ? "Running" : "Idle"}</span>
-                        </div>
-                      </div>
-                      <div className="flex justify-between font-mono">
-                        <span className="text-zinc-500">Active Task:</span>
-                        <span className="text-zinc-300">{backendStatus.active_algorithm || "None"}</span>
-                      </div>
-                      <div className="flex justify-between font-mono">
-                        <span className="text-zinc-500">Speed:</span>
-                        <span className="text-zinc-300">{backendStatus.speed_multiplier}x</span>
-                      </div>
-                    </div>
-                  </GlassCard>
-
-                  {/* System Health */}
-                  <GlassCard className="flex flex-col gap-3 border-zinc-900" hover={false}>
-                    <span className="text-[9px] uppercase tracking-wider text-zinc-500 font-bold block border-b border-zinc-900 pb-2 mb-1">
-                      System Health
+                    <span className="text-[9px] uppercase tracking-wider text-zinc-500 font-bold block border-b border-zinc-900 pb-2 font-mono">
+                      Service Diagnostics
                     </span>
                     <div className="flex flex-col gap-2 text-xs font-mono">
-                      <div className="flex justify-between">
-                        <span className="text-zinc-500">Service:</span>
-                        <span className="text-emerald-400 font-bold">{healthStatus.status === "healthy" ? "ONLINE" : "OFFLINE"}</span>
+                      <div className="flex justify-between items-center">
+                        <span className="text-zinc-500">FastAPI Status:</span>
+                        <div className="flex items-center gap-1.5">
+                          <span className={`w-1.5 h-1.5 rounded-full ${healthStatus.status === "healthy" ? "bg-emerald-400 animate-pulse" : "bg-rose-500"}`} />
+                          <span className="text-zinc-200">{healthStatus.status === "healthy" ? "ONLINE" : "OFFLINE"}</span>
+                        </div>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-zinc-500">Platform:</span>
-                        <span className="text-zinc-300 truncate max-w-[120px]">{healthStatus.platform || "unknown"}</span>
+                        <span className="text-zinc-500">Executor Status:</span>
+                        <span className="text-zinc-300">{backendStatus.running ? "Running" : "Idle"}</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-zinc-500">Server PID:</span>
@@ -365,50 +339,18 @@ const Dashboard = ({ onBack, onThemeChange }) => {
                     </div>
                   </GlassCard>
 
-                  {/* Recent Benchmark */}
+                  {/* Actions & Utilities panel */}
                   <GlassCard className="flex flex-col gap-3 border-zinc-900" hover={false}>
-                    <span className="text-[9px] uppercase tracking-wider text-zinc-500 font-bold block border-b border-zinc-900 pb-2 mb-1">
-                      Recent Benchmark
+                    <span className="text-[9px] uppercase tracking-wider text-zinc-500 font-bold block border-b border-zinc-900 pb-2 font-mono">
+                      Quick Operations
                     </span>
-                    {processedData.ASM ? (
-                      <div className="flex flex-col gap-2 text-xs font-mono">
-                        <div className="flex justify-between">
-                          <span className="text-zinc-500">Best Strategy:</span>
-                          <span className="text-zinc-100 font-bold">ASM</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-zinc-500">Optimal Fitness:</span>
-                          <span className="text-emerald-400 font-semibold">{processedData.ASM.fitness.toFixed(5)}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-zinc-500">Mean Wait:</span>
-                          <span className="text-zinc-300">{processedData.ASM.avg_wait.toFixed(1)}s</span>
-                        </div>
-                      </div>
-                    ) : (
-                      <span className="text-xs text-zinc-500">Awaiting benchmark results dataset...</span>
-                    )}
-                  </GlassCard>
-
-                  {/* Quick Actions */}
-                  <GlassCard className="flex flex-col gap-3 border-zinc-900 md:col-span-2" hover={false}>
-                    <span className="text-[9px] uppercase tracking-wider text-zinc-500 font-bold block border-b border-zinc-900 pb-2 mb-1">
-                      Quick Operations Actions
-                    </span>
-                    <div className="flex flex-wrap gap-2 mt-1">
-                      <button 
-                        onClick={() => handleAction("run_benchmark")} 
-                        className="px-3 py-1.5 rounded-lg border border-zinc-800 bg-zinc-900 hover:bg-zinc-800 text-xs font-semibold text-zinc-200 transition-all flex items-center gap-1.5"
-                      >
-                        <Activity size={12} />
-                        Run Baseline CLI
-                      </button>
+                    <div className="flex flex-col gap-2">
                       <button 
                         onClick={() => handleAction("clear_cache")} 
-                        className="px-3 py-1.5 rounded-lg border border-zinc-800 bg-zinc-900 hover:bg-zinc-800 text-xs font-semibold text-zinc-200 transition-all flex items-center gap-1.5"
+                        className="w-full text-center py-2 rounded-lg border border-zinc-800 bg-zinc-900 hover:bg-zinc-800 text-[10px] font-bold uppercase tracking-widest text-zinc-300 transition-all flex items-center justify-center gap-1.5"
                       >
-                        <RotateCcw size={12} />
-                        Clear Server Cache
+                        <RotateCcw size={10} />
+                        Reset API Memory
                       </button>
                     </div>
                   </GlassCard>
@@ -431,10 +373,10 @@ const Dashboard = ({ onBack, onThemeChange }) => {
                     </div>
                     <DetailBox title="Kernel Specification Report" icon={Layers} color={theme.color}>
                       <div className="grid grid-cols-2 gap-4">
-                        <SpecItem label="Total Cycle Duration" value={`${currentResult.cycle_time}s`} color={theme.color} />
-                        <SpecItem label="Mean Vehicle Density" value={currentResult.avg_density.toFixed(2)} color={theme.color} />
-                        <SpecItem label="Average Velocity" value={`${currentResult.avg_speed.toFixed(2)} km/h`} color={theme.color} />
-                        <SpecItem label="Congestion Index" value={currentResult.congestion_pressure.toFixed(2)} color={theme.color} />
+                        <SpecItem label="Total Cycle Duration" value={`${currentResult?.cycle_time || 120}s`} color={theme.color} />
+                        <SpecItem label="Mean Vehicle Density" value={currentResult?.avg_density?.toFixed(2) || "0.00"} color={theme.color} />
+                        <SpecItem label="Average Velocity" value={`${currentResult?.avg_speed?.toFixed(2) || "0.00"} km/h`} color={theme.color} />
+                        <SpecItem label="Congestion Index" value={currentResult?.congestion_pressure?.toFixed(2) || "0.00"} color={theme.color} />
                       </div>
                     </DetailBox>
                   </div>
@@ -442,7 +384,7 @@ const Dashboard = ({ onBack, onThemeChange }) => {
                   <div className="flex flex-col gap-6">
                     <DetailBox title="Convergence Curve Trajectory" icon={TrendingUp} color={theme.color}>
                       <div className="h-48 sm:h-60 w-full flex items-end gap-1 px-3 pt-4 bg-zinc-950/20 rounded-xl overflow-hidden border border-zinc-900">
-                        {currentResult.normalizedConv.map((v, i) => (
+                        {currentResult?.normalizedConv ? currentResult.normalizedConv.map((v, i) => (
                           <motion.div
                             key={i}
                             initial={{ height: 0 }}
@@ -453,16 +395,18 @@ const Dashboard = ({ onBack, onThemeChange }) => {
                               opacity: 0.25 + (i / currentResult.normalizedConv.length) * 0.75
                             }}
                           />
-                        ))}
+                        )) : (
+                          <span className="text-xs text-zinc-600 font-mono absolute inset-0 flex items-center justify-center">Awaiting curve coordinates...</span>
+                        )}
                       </div>
                       <p className="text-[10px] text-zinc-500 mt-3 text-center uppercase tracking-widest font-semibold font-mono">
-                        Fitness Evaluation Trajectory (n={currentResult.normalizedConv.length})
+                        Fitness Evaluation Trajectory (n={currentResult?.normalizedConv?.length || 0})
                       </p>
                     </DetailBox>
                   </div>
                 </div>
               </motion.div>
-            ) : null}
+            )}
           </AnimatePresence>
         </section>
       </div>
@@ -483,14 +427,14 @@ const SidebarButton = ({ label, sub, active, onClick, icon }) => (
       {icon}
     </div>
     <div className="flex flex-col">
-      <span className="text-[9px] uppercase tracking-widest text-zinc-500 font-semibold">{sub}</span>
+      <span className="text-[9px] uppercase tracking-widest text-zinc-500 font-semibold font-mono">{sub}</span>
       <span className="text-xs sm:text-sm uppercase tracking-tight font-bold">{label}</span>
     </div>
   </button>
 );
 
 const FuzzyRuleCard = ({ index, rule, effect, priority }) => (
-  <div className="p-3.5 sm:p-4 bg-zinc-950/40 border border-zinc-900 rounded-xl flex flex-col gap-1.5 hover:border-blue-500/40 transition-all">
+  <div className="p-3.5 sm:p-4 bg-zinc-950/40 border border-zinc-900 rounded-xl flex flex-col gap-1.5 hover:border-blue-500/40 transition-all font-mono">
     <div className="flex items-center justify-between">
       <span className="text-[9px] uppercase text-blue-400 tracking-wider">Rule #{index}</span>
       <span className={`text-[8px] uppercase px-2 py-0.5 rounded border ${
@@ -517,7 +461,7 @@ const ComparisonImage = ({ src, title }) => (
       onError={(e) => { e.target.style.display = 'none'; }}
     />
     <div className="mt-2 px-3 py-1 bg-zinc-900/60 rounded-full border border-zinc-800">
-      <h5 className="text-[10px] sm:text-xs uppercase tracking-wider text-zinc-400">{title}</h5>
+      <h5 className="text-[10px] sm:text-xs uppercase tracking-wider text-zinc-400 font-mono">{title}</h5>
     </div>
   </div>
 );
@@ -529,14 +473,14 @@ const ChartBox = ({ title, metric, unit, data, icon: Icon, invert }) => {
     <div className="bg-zinc-950/40 border border-zinc-900 p-4 sm:p-6 rounded-2xl shadow-xl relative overflow-hidden backdrop-blur-md">
       <div className="flex items-center gap-3 mb-4 sm:mb-6">
         <Icon size={18} className="text-zinc-500" />
-        <h4 className="text-xs uppercase tracking-widest text-zinc-400">{title}</h4>
+        <h4 className="text-xs uppercase tracking-widest text-zinc-400 font-mono">{title}</h4>
       </div>
       <div className="flex flex-col gap-3">
         {sorted.map(key => (
           <div key={key} className="flex flex-col gap-1">
-            <div className="flex justify-between items-center text-xs">
+            <div className="flex justify-between items-center text-xs font-mono">
               <span className="uppercase tracking-tight font-medium" style={{ color: (ALGO_THEMES[key] || ALGO_THEMES.GA).color }}>{key} Engine</span>
-              <span className="text-zinc-400 font-mono font-semibold">{(data[key][metric]).toLocaleString()} {unit}</span>
+              <span className="text-zinc-400 font-semibold">{(data[key][metric]).toLocaleString()} {unit}</span>
             </div>
             <div className="h-2 w-full bg-zinc-900 rounded-full overflow-hidden border border-zinc-800">
               <motion.div
@@ -554,7 +498,7 @@ const ChartBox = ({ title, metric, unit, data, icon: Icon, invert }) => {
 };
 
 const SpecItem = ({ label, value, color }) => (
-  <div className="flex flex-col">
+  <div className="flex flex-col font-mono">
     <span className="text-[9px] uppercase text-zinc-500 tracking-wider mb-0.5">{label}</span>
     <span className="text-base sm:text-xl uppercase tracking-tight font-semibold" style={{ color }}>{value}</span>
   </div>
@@ -564,7 +508,7 @@ const DetailBox = ({ title, icon: Icon, color, children }) => (
   <div className="bg-zinc-950/40 border border-zinc-900 rounded-2xl p-4 sm:p-6 shadow-xl backdrop-blur-md">
     <div className="flex items-center gap-3 mb-4">
       <Icon size={18} style={{ color }} />
-      <h5 className="text-xs uppercase tracking-widest text-zinc-400">{title}</h5>
+      <h5 className="text-xs uppercase tracking-widest text-zinc-400 font-mono">{title}</h5>
     </div>
     {children}
   </div>

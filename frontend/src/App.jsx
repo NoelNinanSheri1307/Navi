@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { Layout } from "./components/layout/Layout";
 import { Home } from "./pages/Home";
-import Dashboard from "./pages/Dashboard";
 import { Simulation } from "./pages/Simulation";
 import { Architecture } from "./pages/Architecture";
 import { Algorithms } from "./pages/Algorithms";
@@ -18,8 +17,6 @@ function App() {
     switch (activePage) {
       case "home":
         return <Home onNavigate={setActivePage} />;
-      case "dashboard":
-        return <Dashboard onBack={() => setActivePage("home")} />;
       case "simulation":
         return <Simulation />;
       case "architecture":

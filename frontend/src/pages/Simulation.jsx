@@ -9,6 +9,7 @@ import { Button } from "../components/ui/Button";
 import { Badge } from "../components/ui/Badge";
 import SimulationCanvas from "../components/SimulationCanvas";
 import { API_BASE_URL, WS_BASE_URL } from "../config/api";
+import rawData from "../data/data.json";
 import { 
   Play, 
   Pause, 
@@ -24,6 +25,41 @@ import {
   AlertTriangle,
   FileText
 } from "lucide-react";
+
+// Helper function to resolve starting parameters for different algorithms from data.json
+const getInitialStateForAlgo = (algo) => {
+  const match = Array.isArray(rawData) ? rawData.find(item => item.algorithm?.toUpperCase() === algo.toUpperCase()) : null;
+  if (match) {
+    return {
+      fitness: match.fitness,
+      best_fitness: match.fitness,
+      current_optimizer: algo,
+      runtime: 0.0,
+      green_times: match.green_times || [30, 30, 30, 30],
+      cycle_time: match.cycle_time || 120,
+      avg_speed: match.avg_speed || 1.8,
+      avg_density: match.avg_density || 160.0,
+      avg_wait_time: match.avg_wait_time || 4500.0,
+      total_flow: match.total_flow || 0.0,
+      avg_queue_length: match.avg_queue_length || 0.0,
+      congestion_pressure: match.congestion_pressure || 160.0
+    };
+  }
+  return {
+    fitness: 0.0,
+    best_fitness: 0.0,
+    current_optimizer: algo,
+    runtime: 0.0,
+    green_times: [30, 30, 30, 30],
+    cycle_time: 120,
+    avg_speed: 1.8,
+    avg_density: 160.0,
+    avg_wait_time: 4500.0,
+    total_flow: 0.0,
+    avg_queue_length: 0.0,
+    congestion_pressure: 160.0
+  };
+};
 
 export const Simulation = () => {
   const [selectedAlgo, setSelectedAlgo] = useState("GA");
@@ -47,20 +83,7 @@ export const Simulation = () => {
   const [historyQueues, setHistoryQueues] = useState([]);
   
   // Real-time telemetry values from WebSocket
-  const [telemetryState, setTelemetryState] = useState({
-    fitness: 0.0,
-    best_fitness: 0.0,
-    current_optimizer: "GA",
-    runtime: 0.0,
-    green_times: [30, 30, 30, 30],
-    cycle_time: 120,
-    avg_speed: 1.8,
-    avg_density: 160.0,
-    avg_wait_time: 4500.0,
-    total_flow: 0.0,
-    avg_queue_length: 0.0,
-    congestion_pressure: 160.0
-  });
+  const [telemetryState, setTelemetryState] = useState(() => getInitialStateForAlgo("GA"));
 
   const [asmState, setAsmState] = useState(null);
   const [convergenceHistory, setConvergenceHistory] = useState([]);
@@ -70,7 +93,31 @@ export const Simulation = () => {
   // Fetch simulation history list on mount
   useEffect(() => {
     fetchHistory();
+    checkActiveSimulation();
+
+    return () => {
+      if (wsRef.current) {
+        wsRef.current.close();
+      }
+    };
   }, []);
+
+  const checkActiveSimulation = () => {
+    fetch(`${API_BASE_URL}/simulation/status`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.running) {
+          setIsPlaying(!data.paused);
+          setSelectedAlgo(data.active_algorithm);
+          setSelectedDataset(data.active_dataset);
+          setSpeed(data.speed_multiplier);
+          setCurrentStep(data.current_step);
+          setMaxSteps(data.total_steps);
+          connectWebSocket();
+        }
+      })
+      .catch(() => {});
+  };
 
   const fetchHistory = () => {
     fetch(`${API_BASE_URL}/simulation/history`)
@@ -169,7 +216,7 @@ export const Simulation = () => {
     setIsPlaying(true);
   };
 
-  const handleReset = async () => {
+  const handleReset = async (targetAlgo = selectedAlgo) => {
     await fetch(`${API_BASE_URL}/simulation/reset`, { method: "POST" });
     if (wsRef.current) wsRef.current.close();
     setIsPlaying(false);
@@ -178,20 +225,10 @@ export const Simulation = () => {
     setConvergenceHistory([]);
     setHistoryQueues([]);
     setHistoryWaitTimes([]);
-    setTelemetryState({
-      fitness: 0.0,
-      best_fitness: 0.0,
-      current_optimizer: "GA",
-      runtime: 0.0,
-      green_times: [30, 30, 30, 30],
-      cycle_time: 120,
-      avg_speed: 1.8,
-      avg_density: 160.0,
-      avg_wait_time: 4500.0,
-      total_flow: 0.0,
-      avg_queue_length: 0.0,
-      congestion_pressure: 160.0
-    });
+    
+    // Load dynamic parameters specific to selected algorithm
+    const initTelemetry = getInitialStateForAlgo(targetAlgo);
+    setTelemetryState(initTelemetry);
     setAsmState(null);
   };
 
@@ -251,7 +288,7 @@ export const Simulation = () => {
 
   return (
     <Section>
-      <Container size="default" className="flex flex-col gap-8">
+      <Container size="default" className="flex flex-col gap-8 bg-black">
         <PageHeader
           eyebrow="Simulation Workspace"
           title="Optimization Simulator"
@@ -264,7 +301,11 @@ export const Simulation = () => {
             <span className="text-[9px] uppercase tracking-wider text-zinc-500 font-semibold font-mono">Algorithm</span>
             <select
               value={selectedAlgo}
-              onChange={(e) => { setSelectedAlgo(e.target.value); handleReset(); }}
+              onChange={(e) => { 
+                const newAlgo = e.target.value;
+                setSelectedAlgo(newAlgo); 
+                handleReset(newAlgo); 
+              }}
               disabled={isPlaying}
               className="bg-zinc-900 border border-zinc-800 text-xs rounded-lg p-2 text-zinc-100 focus:outline-none"
             >
@@ -336,7 +377,7 @@ export const Simulation = () => {
                 icon={RotateCcw} 
                 size="sm" 
                 variant="outline" 
-                onClick={handleReset} 
+                onClick={() => handleReset(selectedAlgo)} 
                 aria-label="Reset Simulation"
               />
             </div>
@@ -360,6 +401,7 @@ export const Simulation = () => {
                 avgSpeed={telemetryState.avg_speed}
                 speedMultiplier={speed}
                 onStatsUpdate={handleStatsUpdate}
+                running={isPlaying}
               />
 
               {/* Lane Phase Countdown Indicators */}
@@ -563,9 +605,9 @@ export const Simulation = () => {
                   Server Execution History
                 </span>
                 <div className="flex flex-col gap-1.5 max-h-[160px] overflow-y-auto pr-1 custom-scrollbar">
-                  {runHistory.map((run) => (
+                  {runHistory.map((run, idx) => (
                     <button
-                      key={run.id}
+                      key={run.id || `${run.timestamp}-${run.algorithm}-${idx}`}
                       onClick={() => loadPreviousRun(run)}
                       className="w-full flex items-center justify-between p-2 rounded bg-zinc-900/40 border border-zinc-900/60 hover:bg-zinc-900 hover:border-zinc-800 text-left text-[10px] text-zinc-400 transition-all font-mono"
                     >

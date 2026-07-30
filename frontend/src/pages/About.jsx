@@ -3,7 +3,6 @@ import { Container } from "../components/ui/Container";
 import { Section } from "../components/ui/Section";
 import { PageHeader } from "../components/ui/PageHeader";
 import { Callout } from "../components/ui/Callout";
-import { MetricCard } from "../components/ui/MetricCard";
 import { InfoPanel } from "../components/ui/InfoPanel";
 import { GlassCard } from "../components/ui/GlassCard";
 import { Globe } from "lucide-react";
@@ -11,7 +10,7 @@ import { Globe } from "lucide-react";
 export const About = () => {
   return (
     <Section>
-      <Container size="default" className="flex flex-col gap-8">
+      <Container size="default" className="flex flex-col gap-8 bg-black">
         <PageHeader
           eyebrow="System Context"
           title="About Navi"
@@ -23,9 +22,9 @@ export const About = () => {
         </Callout>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <GlassCard className="flex flex-col gap-3" hover={false}>
-            <h3 className="text-sm font-semibold uppercase tracking-wider text-zinc-200">
-              Core Core Contributions
+          <GlassCard className="flex flex-col gap-3 border-zinc-900" hover={false}>
+            <h3 className="text-sm font-semibold uppercase tracking-wider text-zinc-250">
+              Core Contributions
             </h3>
             <ul className="flex flex-col gap-2.5 text-xs text-zinc-400 leading-relaxed font-normal">
               <li>
@@ -40,8 +39,8 @@ export const About = () => {
             </ul>
           </GlassCard>
 
-          <GlassCard className="flex flex-col gap-3" hover={false}>
-            <h3 className="text-sm font-semibold uppercase tracking-wider text-zinc-200">
+          <GlassCard className="flex flex-col gap-3 border-zinc-900" hover={false}>
+            <h3 className="text-sm font-semibold uppercase tracking-wider text-zinc-250">
               Project Parameters
             </h3>
             <div className="grid grid-cols-2 gap-4">

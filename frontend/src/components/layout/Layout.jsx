@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { 
   Home as HomeIcon, 
-  LayoutGrid, 
   Play, 
   Layers, 
   Cpu, 
@@ -24,7 +23,6 @@ export const Layout = ({ children, activePage, onNavigate }) => {
 
   const navItems = [
     { id: "home", label: "Home", icon: HomeIcon, desc: "Landing Page" },
-    { id: "dashboard", label: "Dashboard", icon: LayoutGrid, desc: "Interactive workspace" },
     { id: "simulation", label: "Simulation", icon: Play, desc: "Traffic Inspector" },
     { id: "architecture", label: "Architecture", icon: Layers, desc: "System structure" },
     { id: "algorithms", label: "Algorithms", icon: Cpu, desc: "Search kernels" },
@@ -48,8 +46,8 @@ export const Layout = ({ children, activePage, onNavigate }) => {
       <aside className="hidden lg:flex flex-col w-64 shrink-0 border-r border-zinc-900 bg-[#09090b]/40 backdrop-blur-xl sticky top-0 h-screen select-none z-30">
         {/* Brand Container */}
         <div className="h-16 flex items-center px-6 border-b border-zinc-900 gap-3">
-          <div className="p-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-emerald-400">
-            <Terminal size={16} />
+          <div className="p-1 rounded-lg bg-zinc-900 border border-zinc-800 flex items-center justify-center">
+            <img src="/favicon.svg" alt="Navi Logo" className="w-5 h-5 object-contain" />
           </div>
           <div className="flex flex-col">
             <span className="text-sm font-semibold tracking-tight text-zinc-200">Navi</span>
@@ -84,14 +82,7 @@ export const Layout = ({ children, activePage, onNavigate }) => {
           })}
         </nav>
 
-        {/* Footer info/status */}
-        <div className="p-4 border-t border-zinc-900/80 flex items-center justify-between text-[10px] text-zinc-500">
-          <span>Engine Status:</span>
-          <div className="flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="text-zinc-400 uppercase tracking-wider">v2.0 Stable</span>
-          </div>
-        </div>
+
       </aside>
 
       {/* Mobile Drawer Backdrop */}
@@ -108,8 +99,8 @@ export const Layout = ({ children, activePage, onNavigate }) => {
       }`}>
         <div className="h-16 flex items-center justify-between px-6 border-b border-zinc-900">
           <div className="flex items-center gap-3">
-            <div className="p-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-emerald-400">
-              <Terminal size={16} />
+            <div className="p-1 rounded-lg bg-zinc-900 border border-zinc-800 flex items-center justify-center">
+              <img src="/favicon.svg" alt="Navi Logo" className="w-5 h-5 object-contain" />
             </div>
             <span className="text-sm font-semibold tracking-tight text-zinc-200">Navi</span>
           </div>
@@ -170,11 +161,7 @@ export const Layout = ({ children, activePage, onNavigate }) => {
           {/* Right section: Status */}
           <div className="flex items-center gap-4">
 
-            {/* Telemetry Status Indicator */}
-            <div className="flex items-center gap-2 px-2.5 py-1 rounded-full bg-zinc-950 border border-zinc-900 text-[10px] uppercase tracking-wider text-zinc-400">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.5)] animate-pulse" />
-              <span className="hidden sm:inline">Telemetry Live</span>
-            </div>
+
           </div>
         </header>
 

@@ -14,9 +14,9 @@ export const Documentation = () => {
         "Navi is a research platform for optimizing traffic signal timing at road intersections using parameterized Mamdani fuzzy logic and metaheuristic optimization algorithms.",
     },
     {
-      title: "Where is the Master Architecture Specification stored?",
+      title: "Where is the Master System Documentation stored?",
       content:
-        "The complete technical design specification, 11-layer architecture, ASM blueprint, and scientific benchmarking protocol are documented in docs/architecture_master_blueprint.md.",
+        "The complete technical and functional system specifications, including system sequence flows, ASM logic, and optimization concepts, are documented in docs/navi_system_documentation.md.",
     },
     {
       title: "How do I run backend benchmarks?",
@@ -39,8 +39,8 @@ export const Documentation = () => {
           description="Complete developer guide, architectural specifications, and execution instructions for Navi Framework."
         />
 
-        <Callout type="note" title="Master Architecture Document">
-          Refer to docs/architecture_master_blueprint.md in the root directory for the complete 11-layer design, ASM specifications, and multi-objective Pareto formulations.
+        <Callout type="note" title="Master System Documentation">
+          Refer to docs/navi_system_documentation.md in the root directory for the complete system design, ASM switching mechanics, mathematical concepts, and API routing schemas.
         </Callout>
 
         <div className="flex flex-col gap-4 mt-2">

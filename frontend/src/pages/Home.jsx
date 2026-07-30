@@ -69,9 +69,6 @@ export const Home = ({ onNavigate }) => {
         <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[250px] bg-emerald-500/5 rounded-full blur-[120px] pointer-events-none" />
 
         <Container size="default" className="flex flex-col items-center text-center gap-6 relative z-10">
-          <Badge variant="emerald" className="px-3 py-1">
-            Navi Framework v2.0 Stable &bull; Production Release
-          </Badge>
 
           <h1 className="text-4xl sm:text-6xl md:text-7xl text-zinc-100 tracking-tight leading-[1.1] max-w-4xl font-normal">
             Adaptive Traffic Signal Optimization & Fuzzy Intelligence
@@ -86,9 +83,9 @@ export const Home = ({ onNavigate }) => {
               variant="primary"
               size="lg"
               icon={MoveRight}
-              onClick={() => onNavigate("dashboard")}
+              onClick={() => onNavigate("simulation")}
             >
-              Launch Dashboard Workspace
+              Launch Simulator Workspace
             </Button>
             <Button
               variant="outline"
@@ -359,15 +356,15 @@ export const Home = ({ onNavigate }) => {
               Ready to Explore the Signal Optimization Workspace?
             </h2>
             <p className="text-sm text-zinc-400 max-w-xl leading-relaxed">
-              Launch the workspace dashboard to compare metaheuristics, inspect rule fire dynamics, and run microscopic traffic flow simulations.
+              Launch the workspace simulator to compare metaheuristics, inspect rule fire dynamics, and run microscopic traffic flow simulations.
             </p>
             <Button
               variant="primary"
               size="lg"
               icon={MoveRight}
-              onClick={() => onNavigate("dashboard")}
+              onClick={() => onNavigate("simulation")}
             >
-              Launch Dashboard Workspace
+              Launch Simulator Workspace
             </Button>
           </GlassCard>
         </Container>
