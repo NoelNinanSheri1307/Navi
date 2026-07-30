@@ -20,6 +20,7 @@
   html, body {
     @apply text-zinc-100 bg-[#09090b] antialiased selection:bg-emerald-500/20 selection:text-emerald-300;
     font-family: 'Footlight MT Light', serif !important;
+    font-size: 17px;
     overflow-x: hidden;
     scroll-behavior: smooth;
   }
