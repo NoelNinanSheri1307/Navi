@@ -1,6 +1,9 @@
 # Traffic Flow Control — Fuzzy + Metaheuristic Optimization
 # Python 3.10+
 
+fastapi>=0.115.0
+uvicorn[standard]>=0.30.0
+python-dotenv>=1.0.0
 numpy>=1.24
 pandas>=2.0
 scikit-fuzzy>=0.4.2

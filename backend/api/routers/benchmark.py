@@ -5,7 +5,7 @@ from typing import List, Optional
 
 router = APIRouter(prefix="/benchmark", tags=["Benchmark"])
 
-RESULTS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "backend", "output", "results")
+RESULTS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "output", "results")
 
 @router.get("")
 async def get_benchmarks(

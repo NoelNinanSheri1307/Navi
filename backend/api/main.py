@@ -3,6 +3,9 @@ import os
 import asyncio
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Ensure the parent directory is in the path to resolve local imports cleanly
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -27,10 +30,15 @@ app = FastAPI(
     openapi_url="/openapi.json"
 )
 
-# Enable CORS for frontend clients (Vite dev servers)
+def get_cors_origins():
+    raw_origins = os.getenv("CORS_ORIGINS", "http://localhost:5173,http://localhost:3000")
+    return [origin.strip() for origin in raw_origins.split(",") if origin.strip()]
+
+
+# Enable CORS for frontend clients (Vite dev servers and deployed Vercel/Render fronts)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=get_cors_origins(),
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
