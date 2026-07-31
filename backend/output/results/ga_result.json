@@ -1,0 +1,117 @@
+{
+  "algorithm": "GA",
+  "green_times": [
+    20.8,
+    20.8,
+    41.6,
+    20.8
+  ],
+  "cycle_time": 120,
+  "avg_speed": 10.8542,
+  "avg_density": 201.3498,
+  "avg_wait_time": 2787.5483,
+  "total_flow": 1503.5225,
+  "avg_queue_length": 100.6749,
+  "congestion_pressure": 87.030428,
+  "speed_density_ratio": 0.053907,
+  "fitness": -0.17120772,
+  "convergence_history": [
+    -0.17208872,
+    -0.17182792,
+    -0.17182792,
+    -0.17084415,
+    -0.17084415,
+    -0.17084415,
+    -0.17084415,
+    -0.16671971,
+    -0.16671971,
+    -0.16671971,
+    -0.16671971,
+    -0.16671971,
+    -0.16671971,
+    -0.16671971,
+    -0.16671971,
+    -0.16671971,
+    -0.16491507,
+    -0.16491507,
+    -0.16491507,
+    -0.16314338
+  ],
+  "simulation_steps": [
+    {
+      "cycle": 1,
+      "green_times": [
+        25.0,
+        25.0,
+        25.0,
+        25.0
+      ],
+      "avg_speed": 20.766,
+      "avg_density": 79.02,
+      "avg_wait": 2248.465,
+      "total_flow": 1250.493,
+      "avg_queue": 39.51,
+      "pressure": 32.7115
+    },
+    {
+      "cycle": 2,
+      "green_times": [
+        23.93,
+        16.01,
+        32.03,
+        32.03
+      ],
+      "avg_speed": 18.69,
+      "avg_density": 107.797,
+      "avg_wait": 2232.446,
+      "total_flow": 1555.384,
+      "avg_queue": 53.899,
+      "pressure": 29.1881
+    },
+    {
+      "cycle": 3,
+      "green_times": [
+        20.8,
+        20.8,
+        41.6,
+        20.8
+      ],
+      "avg_speed": 4.911,
+      "avg_density": 188.852,
+      "avg_wait": 3672.342,
+      "total_flow": 1572.79,
+      "avg_queue": 94.426,
+      "pressure": 98.8453
+    },
+    {
+      "cycle": 4,
+      "green_times": [
+        41.6,
+        20.8,
+        20.8,
+        20.8
+      ],
+      "avg_speed": 4.944,
+      "avg_density": 275.436,
+      "avg_wait": 2325.601,
+      "total_flow": 1565.248,
+      "avg_queue": 137.718,
+      "pressure": 99.0277
+    },
+    {
+      "cycle": 5,
+      "green_times": [
+        20.8,
+        20.8,
+        41.6,
+        20.8
+      ],
+      "avg_speed": 4.96,
+      "avg_density": 355.643,
+      "avg_wait": 3458.889,
+      "total_flow": 1573.697,
+      "avg_queue": 177.822,
+      "pressure": 175.3795
+    }
+  ]
+}

@@ -142,12 +142,22 @@ class SimulationService:
                     f"Dataset path '{dataset}' could not be resolved. Checked: {checked}"
                 )
 
+            # Check for Demo/Replay mode to avoid high memory/CPU usage on Render
+            demo_mode = os.getenv("DEMO_MODE", "true").lower() == "true" or "RENDER" in os.environ
+
             # Spawn runner thread
-            self.run_thread = threading.Thread(
-                target=self._run_optimization_loop,
-                args=(self.active_algorithm, csv_path, pop_size, n_gen),
-                daemon=True
-            )
+            if demo_mode:
+                self.run_thread = threading.Thread(
+                    target=self._run_replay_loop,
+                    args=(self.active_algorithm, csv_path, pop_size, n_gen),
+                    daemon=True
+                )
+            else:
+                self.run_thread = threading.Thread(
+                    target=self._run_optimization_loop,
+                    args=(self.active_algorithm, csv_path, pop_size, n_gen),
+                    daemon=True
+                )
             self.run_thread.start()
 
     def _run_optimization_loop(self, algorithm: str, csv_path: str, pop_size: int, n_gen: int):
@@ -328,6 +338,113 @@ class SimulationService:
                 })
 
             # 4. Emit Optimization Finished Event
+            self.broadcast_sync({
+                "type": "event",
+                "event": "Optimization Finished",
+                "timestamp": time.time(),
+                "payload": {"best_fitness": float(best_fitness)}
+            })
+
+        except Exception as e:
+            self.broadcast_sync({
+                "type": "event",
+                "event": "Error Occurred",
+                "timestamp": time.time(),
+                "payload": {"error": str(e)}
+            })
+        finally:
+            with self.lock:
+                self.running = False
+                self.paused = False
+
+    def _run_replay_loop(self, algorithm: str, csv_path: str, pop_size: int, n_gen: int):
+        import json
+        import os
+        import time
+
+        try:
+            # 1. Load pre-recorded replay
+            replays_dir = os.path.join(
+                os.path.dirname(os.path.abspath(__file__)), "..", "..", "datasets", "replays"
+            )
+            replay_path = os.path.join(replays_dir, f"{algorithm.lower()}_replay.json")
+
+            if not os.path.isfile(replay_path):
+                raise FileNotFoundError(f"Replay asset not found at {replay_path}")
+
+            with open(replay_path, "r", encoding="utf-8") as f:
+                replay_data = json.load(f)
+
+            steps = replay_data.get("steps", [])
+            final_result = replay_data.get("final_result", {})
+
+            # 2. Emit Simulation Started Event
+            self.broadcast_sync({
+                "type": "event",
+                "event": "Simulation Started",
+                "timestamp": time.time(),
+                "payload": {"algorithm": algorithm, "dataset": csv_path}
+            })
+
+            # 3. Replay steps
+            for step_entry in steps:
+                step_idx = step_entry["step"]
+                events = step_entry["events"]
+
+                # Handle pause / resume / cancel flags
+                while True:
+                    with self.lock:
+                        if not self.running:
+                            self.broadcast_sync({
+                                "type": "event",
+                                "event": "Simulation Cancelled",
+                                "timestamp": time.time(),
+                                "payload": {}
+                            })
+                            return
+                        if not self.paused:
+                            break
+                    time.sleep(0.1)
+
+                with self.lock:
+                    self.current_step = step_idx
+
+                # Broadcast all pre-recorded events for this step
+                for event in events:
+                    self.broadcast_sync(event)
+
+                # Delay based on speed multiplier
+                delay_sec = 1.0 / self.speed_multiplier
+                time.sleep(delay_sec)
+
+            # 4. Save/Verify final result JSON to disk
+            out_dir = os.path.join(
+                os.path.dirname(os.path.abspath(__file__)), "..", "..", "output", "results"
+            )
+            os.makedirs(out_dir, exist_ok=True)
+            result_path = os.path.join(out_dir, f"{algorithm.lower()}_result.json")
+
+            with open(result_path, "w", encoding="utf-8") as f:
+                json.dump(final_result, f, indent=2)
+
+            # Save to local cache history
+            best_fitness = final_result.get("fitness", 0.0)
+            avg_wait_time = final_result.get("avg_wait_time", 0.0)
+            avg_queue_length = final_result.get("avg_queue_length", 0.0)
+
+            with self.lock:
+                self.history_records.append({
+                    "timestamp": time.strftime("%H:%M:%S"),
+                    "dataset": os.path.basename(csv_path),
+                    "algorithm": algorithm,
+                    "runtime": f"{len(steps) * delay_sec:.1f}s",
+                    "bestFitness": f"{best_fitness:.5f}",
+                    "iterations": n_gen,
+                    "avgDelay": f"{avg_wait_time:.1f}s",
+                    "queueLength": f"{avg_queue_length:.1f}"
+                })
+
+            # 5. Emit Optimization Finished Event
             self.broadcast_sync({
                 "type": "event",
                 "event": "Optimization Finished",

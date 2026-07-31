@@ -1,0 +1,841 @@
+{
+  "algorithm": "SA",
+  "steps": [
+    {
+      "step": 0,
+      "events": [
+        {
+          "type": "telemetry",
+          "data": {
+            "iteration": 0,
+            "fitness": -0.17849671535698547,
+            "best_fitness": -0.17925911980464243,
+            "current_optimizer": "SA",
+            "runtime": 0.14634013175964355,
+            "green_times": [
+              20.8,
+              20.8,
+              41.6,
+              20.8
+            ],
+            "cycle_time": 120.0,
+            "avg_speed": 10.881659094411692,
+            "avg_density": 198.2262085159368,
+            "avg_wait_time": 3094.450055761101,
+            "total_flow": 1455.2174623671895,
+            "avg_queue_length": 99.1131042579684,
+            "congestion_pressure": 92.45900061944607
+          }
+        },
+        {
+          "type": "event",
+          "event": "Iteration Completed",
+          "payload": {
+            "iteration": 0,
+            "fitness": -0.17849671535698547
+          }
+        }
+      ]
+    },
+    {
+      "step": 1,
+      "events": [
+        {
+          "type": "telemetry",
+          "data": {
+            "iteration": 1,
+            "fitness": -0.18005952846773976,
+            "best_fitness": -0.17925911980464243,
+            "current_optimizer": "SA",
+            "runtime": 0.1314682960510254,
+            "green_times": [
+              20.8,
+              20.8,
+              41.6,
+              20.8
+            ],
+            "cycle_time": 120.0,
+            "avg_speed": 8.46902727993929,
+            "avg_density": 208.32675454600903,
+            "avg_wait_time": 2615.8119387971883,
+            "total_flow": 1458.802403171941,
+            "avg_queue_length": 101.94407517997136,
+            "congestion_pressure": 87.85990358052345
+          }
+        },
+        {
+          "type": "event",
+          "event": "Iteration Completed",
+          "payload": {
+            "iteration": 1,
+            "fitness": -0.18005952846773976
+          }
+        }
+      ]
+    },
+    {
+      "step": 2,
+      "events": [
+        {
+          "type": "telemetry",
+          "data": {
+            "iteration": 2,
+            "fitness": -0.19138100607475222,
+            "best_fitness": -0.17925911980464243,
+            "current_optimizer": "SA",
+            "runtime": 0.14150261878967285,
+            "green_times": [
+              20.8,
+              20.8,
+              41.6,
+              20.8
+            ],
+            "cycle_time": 120.0,
+            "avg_speed": 8.677717203711566,
+            "avg_density": 203.83901363246764,
+            "avg_wait_time": 3385.3117878349794,
+            "total_flow": 1479.8937154902692,
+            "avg_queue_length": 99.65322428128952,
+            "congestion_pressure": 105.06039552382018
+          }
+        },
+        {
+          "type": "event",
+          "event": "Iteration Completed",
+          "payload": {
+            "iteration": 2,
+            "fitness": -0.19138100607475222
+          }
+        }
+      ]
+    },
+    {
+      "step": 3,
+      "events": [
+        {
+          "type": "telemetry",
+          "data": {
+            "iteration": 3,
+            "fitness": -0.1854565132742214,
+            "best_fitness": -0.17925911980464243,
+            "current_optimizer": "SA",
+            "runtime": 0.12504053115844727,
+            "green_times": [
+              20.8,
+              20.8,
+              41.6,
+              20.8
+            ],
+            "cycle_time": 120.0,
+            "avg_speed": 8.500538707760594,
+            "avg_density": 206.38858895022867,
+            "avg_wait_time": 2931.0111810694257,
+            "total_flow": 1473.7061794024467,
+            "avg_queue_length": 100.86073894125123,
+            "congestion_pressure": 93.02746221713281
+          }
+        },
+        {
+          "type": "event",
+          "event": "Iteration Completed",
+          "payload": {
+            "iteration": 3,
+            "fitness": -0.1854565132742214
+          }
+        }
+      ]
+    },
+    {
+      "step": 4,
+      "events": [
+        {
+          "type": "telemetry",
+          "data": {
+            "iteration": 4,
+            "fitness": -0.17713622695862885,
+            "best_fitness": -0.17429728312320297,
+            "current_optimizer": "SA",
+            "runtime": 0.1654500961303711,
+            "green_times": [
+              20.8,
+              20.8,
+              41.6,
+              20.8
+            ],
+            "cycle_time": 120.0,
+            "avg_speed": 10.335136300098885,
+            "avg_density": 200.40038193660484,
+            "avg_wait_time": 2969.6614887442906,
+            "total_flow": 1495.967595863635,
+            "avg_queue_length": 100.20019096830242,
+            "congestion_pressure": 95.29562573625886
+          }
+        },
+        {
+          "type": "event",
+          "event": "Iteration Completed",
+          "payload": {
+            "iteration": 4,
+            "fitness": -0.17713622695862885
+          }
+        }
+      ]
+    },
+    {
+      "step": 5,
+      "events": [
+        {
+          "type": "telemetry",
+          "data": {
+            "iteration": 5,
+            "fitness": -0.17949536220778778,
+            "best_fitness": -0.17429728312320297,
+            "current_optimizer": "SA",
+            "runtime": 0.12772130966186523,
+            "green_times": [
+              20.8,
+              20.8,
+              41.6,
+              20.8
+            ],
+            "cycle_time": 120.0,
+            "avg_speed": 8.793452597117701,
+            "avg_density": 204.0242540682933,
+            "avg_wait_time": 2751.0037947548963,
+            "total_flow": 1486.5389841646415,
+            "avg_queue_length": 99.80865388769777,
+            "congestion_pressure": 87.85095920378257
+          }
+        },
+        {
+          "type": "event",
+          "event": "Iteration Completed",
+          "payload": {
+            "iteration": 5,
+            "fitness": -0.17949536220778778
+          }
+        }
+      ]
+    },
+    {
+      "step": 6,
+      "events": [
+        {
+          "type": "telemetry",
+          "data": {
+            "iteration": 6,
+            "fitness": -0.17656906072064915,
+            "best_fitness": -0.17429728312320297,
+            "current_optimizer": "SA",
+            "runtime": 0.14278197288513184,
+            "green_times": [
+              20.8,
+              20.8,
+              41.6,
+              20.8
+            ],
+            "cycle_time": 120.0,
+            "avg_speed": 11.211014433253407,
+            "avg_density": 196.37905635068697,
+            "avg_wait_time": 3204.4560158954446,
+            "total_flow": 1497.1203450033615,
+            "avg_queue_length": 98.18952817534348,
+            "congestion_pressure": 102.14430741714777
+          }
+        },
+        {
+          "type": "event",
+          "event": "Iteration Completed",
+          "payload": {
+            "iteration": 6,
+            "fitness": -0.17656906072064915
+          }
+        }
+      ]
+    },
+    {
+      "step": 7,
+      "events": [
+        {
+          "type": "telemetry",
+          "data": {
+            "iteration": 7,
+            "fitness": -0.17338531862631934,
+            "best_fitness": -0.17429728312320297,
+            "current_optimizer": "SA",
+            "runtime": 0.5850253105163574,
+            "green_times": [
+              20.8,
+              20.8,
+              41.6,
+              20.8
+            ],
+            "cycle_time": 120.0,
+            "avg_speed": 9.082859526388125,
+            "avg_density": 203.27718166112314,
+            "avg_wait_time": 2508.9974343643235,
+            "total_flow": 1467.0073577407832,
+            "avg_queue_length": 99.43069607047887,
+            "congestion_pressure": 77.8196491217061
+          }
+        },
+        {
+          "type": "event",
+          "event": "Iteration Completed",
+          "payload": {
+            "iteration": 7,
+            "fitness": -0.17338531862631934
+          }
+        }
+      ]
+    },
+    {
+      "step": 8,
+      "events": [
+        {
+          "type": "telemetry",
+          "data": {
+            "iteration": 8,
+            "fitness": -0.16400620346385758,
+            "best_fitness": -0.17429728312320297,
+            "current_optimizer": "SA",
+            "runtime": 0.13361144065856934,
+            "green_times": [
+              20.8,
+              20.8,
+              41.6,
+              20.8
+            ],
+            "cycle_time": 120.0,
+            "avg_speed": 11.663074408955007,
+            "avg_density": 197.4144180373165,
+            "avg_wait_time": 2608.9210738440006,
+            "total_flow": 1481.2601680378723,
+            "avg_queue_length": 98.70720901865825,
+            "congestion_pressure": 75.56228920085832
+          }
+        },
+        {
+          "type": "event",
+          "event": "Iteration Completed",
+          "payload": {
+            "iteration": 8,
+            "fitness": -0.16400620346385758
+          }
+        }
+      ]
+    },
+    {
+      "step": 9,
+      "events": [
+        {
+          "type": "telemetry",
+          "data": {
+            "iteration": 9,
+            "fitness": -0.16351546653997875,
+            "best_fitness": -0.17429728312320297,
+            "current_optimizer": "SA",
+            "runtime": 0.16147661209106445,
+            "green_times": [
+              20.8,
+              20.8,
+              41.6,
+              20.8
+            ],
+            "cycle_time": 120.0,
+            "avg_speed": 10.9948212272796,
+            "avg_density": 196.49332577383908,
+            "avg_wait_time": 2479.2970553395653,
+            "total_flow": 1478.9512791092093,
+            "avg_queue_length": 98.24666288691954,
+            "congestion_pressure": 73.99067117826704
+          }
+        },
+        {
+          "type": "event",
+          "event": "Iteration Completed",
+          "payload": {
+            "iteration": 9,
+            "fitness": -0.16351546653997875
+          }
+        }
+      ]
+    },
+    {
+      "step": 10,
+      "events": [
+        {
+          "type": "telemetry",
+          "data": {
+            "iteration": 10,
+            "fitness": -0.17140587626509035,
+            "best_fitness": -0.17429728312320297,
+            "current_optimizer": "SA",
+            "runtime": 0.14312386512756348,
+            "green_times": [
+              20.8,
+              20.8,
+              41.6,
+              20.8
+            ],
+            "cycle_time": 120.0,
+            "avg_speed": 11.231006121646265,
+            "avg_density": 197.23679743472326,
+            "avg_wait_time": 2848.773851730732,
+            "total_flow": 1472.8213122034326,
+            "avg_queue_length": 98.61839871736163,
+            "congestion_pressure": 77.1144576416814
+          }
+        },
+        {
+          "type": "event",
+          "event": "Iteration Completed",
+          "payload": {
+            "iteration": 10,
+            "fitness": -0.17140587626509035
+          }
+        }
+      ]
+    },
+    {
+      "step": 11,
+      "events": [
+        {
+          "type": "telemetry",
+          "data": {
+            "iteration": 11,
+            "fitness": -0.17979790661619627,
+            "best_fitness": -0.17429728312320297,
+            "current_optimizer": "SA",
+            "runtime": 0.14446330070495605,
+            "green_times": [
+              20.8,
+              20.8,
+              41.6,
+              20.8
+            ],
+            "cycle_time": 120.0,
+            "avg_speed": 10.958862487500173,
+            "avg_density": 197.08424893614534,
+            "avg_wait_time": 3356.7150851027714,
+            "total_flow": 1503.3200624213637,
+            "avg_queue_length": 98.54212446807267,
+            "congestion_pressure": 106.32430831160802
+          }
+        },
+        {
+          "type": "event",
+          "event": "Iteration Completed",
+          "payload": {
+            "iteration": 11,
+            "fitness": -0.17979790661619627
+          }
+        }
+      ]
+    },
+    {
+      "step": 12,
+      "events": [
+        {
+          "type": "telemetry",
+          "data": {
+            "iteration": 12,
+            "fitness": -0.1708985203852434,
+            "best_fitness": -0.17429728312320297,
+            "current_optimizer": "SA",
+            "runtime": 0.1312851905822754,
+            "green_times": [
+              20.8,
+              20.8,
+              41.6,
+              20.8
+            ],
+            "cycle_time": 120.0,
+            "avg_speed": 10.9814266126239,
+            "avg_density": 197.8364517982514,
+            "avg_wait_time": 2846.4828190361213,
+            "total_flow": 1508.015706778483,
+            "avg_queue_length": 98.9182258991257,
+            "congestion_pressure": 80.07098361016793
+          }
+        },
+        {
+          "type": "event",
+          "event": "Iteration Completed",
+          "payload": {
+            "iteration": 12,
+            "fitness": -0.1708985203852434
+          }
+        }
+      ]
+    },
+    {
+      "step": 13,
+      "events": [
+        {
+          "type": "telemetry",
+          "data": {
+            "iteration": 13,
+            "fitness": -0.1751253917888666,
+            "best_fitness": -0.17429728312320297,
+            "current_optimizer": "SA",
+            "runtime": 0.1331768035888672,
+            "green_times": [
+              20.8,
+              20.8,
+              41.6,
+              20.8
+            ],
+            "cycle_time": 120.0,
+            "avg_speed": 8.820060289895327,
+            "avg_density": 202.52850975763766,
+            "avg_wait_time": 2575.149709220624,
+            "total_flow": 1485.8021728990545,
+            "avg_queue_length": 99.1715591796677,
+            "congestion_pressure": 70.90110026071847
+          }
+        },
+        {
+          "type": "event",
+          "event": "Iteration Completed",
+          "payload": {
+            "iteration": 13,
+            "fitness": -0.1751253917888666
+          }
+        }
+      ]
+    },
+    {
+      "step": 14,
+      "events": [
+        {
+          "type": "telemetry",
+          "data": {
+            "iteration": 14,
+            "fitness": -0.17909133149767975,
+            "best_fitness": -0.17429728312320297,
+            "current_optimizer": "SA",
+            "runtime": 0.13016366958618164,
+            "green_times": [
+              20.8,
+              20.8,
+              41.6,
+              20.8
+            ],
+            "cycle_time": 120.0,
+            "avg_speed": 10.831630345981063,
+            "avg_density": 196.97213663408866,
+            "avg_wait_time": 3266.062888644203,
+            "total_flow": 1500.5554516251473,
+            "avg_queue_length": 98.48606831704433,
+            "congestion_pressure": 93.1935589785522
+          }
+        },
+        {
+          "type": "event",
+          "event": "Iteration Completed",
+          "payload": {
+            "iteration": 14,
+            "fitness": -0.17909133149767975
+          }
+        }
+      ]
+    },
+    {
+      "step": 15,
+      "events": [
+        {
+          "type": "telemetry",
+          "data": {
+            "iteration": 15,
+            "fitness": -0.18457711668132387,
+            "best_fitness": -0.17429728312320297,
+            "current_optimizer": "SA",
+            "runtime": 0.1192626953125,
+            "green_times": [
+              20.8,
+              20.8,
+              41.6,
+              20.8
+            ],
+            "cycle_time": 120.0,
+            "avg_speed": 8.627954774095947,
+            "avg_density": 203.17594603867272,
+            "avg_wait_time": 2938.128965767469,
+            "total_flow": 1469.9725042706127,
+            "avg_queue_length": 99.39579269245918,
+            "congestion_pressure": 85.46551574665452
+          }
+        },
+        {
+          "type": "event",
+          "event": "Iteration Completed",
+          "payload": {
+            "iteration": 15,
+            "fitness": -0.18457711668132387
+          }
+        }
+      ]
+    },
+    {
+      "step": 16,
+      "events": [
+        {
+          "type": "telemetry",
+          "data": {
+            "iteration": 16,
+            "fitness": -0.17141614457545787,
+            "best_fitness": -0.17429728312320297,
+            "current_optimizer": "SA",
+            "runtime": 0.1313779354095459,
+            "green_times": [
+              20.8,
+              20.8,
+              41.6,
+              20.8
+            ],
+            "cycle_time": 120.0,
+            "avg_speed": 10.876484990399074,
+            "avg_density": 198.10188838332715,
+            "avg_wait_time": 2868.657671788364,
+            "total_flow": 1517.1921098188627,
+            "avg_queue_length": 99.05094419166358,
+            "congestion_pressure": 94.44671925877988
+          }
+        },
+        {
+          "type": "event",
+          "event": "Iteration Completed",
+          "payload": {
+            "iteration": 16,
+            "fitness": -0.17141614457545787
+          }
+        }
+      ]
+    },
+    {
+      "step": 17,
+      "events": [
+        {
+          "type": "telemetry",
+          "data": {
+            "iteration": 17,
+            "fitness": -0.17676670708988995,
+            "best_fitness": -0.17429728312320297,
+            "current_optimizer": "SA",
+            "runtime": 0.13372206687927246,
+            "green_times": [
+              20.8,
+              20.8,
+              41.6,
+              20.8
+            ],
+            "cycle_time": 120.0,
+            "avg_speed": 10.8669566266302,
+            "avg_density": 199.4518200583818,
+            "avg_wait_time": 3068.27354554934,
+            "total_flow": 1489.7994957098724,
+            "avg_queue_length": 99.7259100291909,
+            "congestion_pressure": 95.98393977739862
+          }
+        },
+        {
+          "type": "event",
+          "event": "Iteration Completed",
+          "payload": {
+            "iteration": 17,
+            "fitness": -0.17676670708988995
+          }
+        }
+      ]
+    },
+    {
+      "step": 18,
+      "events": [
+        {
+          "type": "telemetry",
+          "data": {
+            "iteration": 18,
+            "fitness": -0.18501472872374355,
+            "best_fitness": -0.17429728312320297,
+            "current_optimizer": "SA",
+            "runtime": 0.13461852073669434,
+            "green_times": [
+              20.8,
+              20.8,
+              41.6,
+              20.8
+            ],
+            "cycle_time": 120.0,
+            "avg_speed": 9.080845927589532,
+            "avg_density": 201.41036159983219,
+            "avg_wait_time": 3189.59741601078,
+            "total_flow": 1505.1756782702791,
+            "avg_queue_length": 98.45212141708882,
+            "congestion_pressure": 98.07828035020216
+          }
+        },
+        {
+          "type": "event",
+          "event": "Iteration Completed",
+          "payload": {
+            "iteration": 18,
+            "fitness": -0.18501472872374355
+          }
+        }
+      ]
+    },
+    {
+      "step": 19,
+      "events": [
+        {
+          "type": "telemetry",
+          "data": {
+            "iteration": 19,
+            "fitness": -0.18227228629335085,
+            "best_fitness": -0.17429728312320297,
+            "current_optimizer": "SA",
+            "runtime": 0.15623164176940918,
+            "green_times": [
+              20.8,
+              20.8,
+              41.6,
+              20.8
+            ],
+            "cycle_time": 120.0,
+            "avg_speed": 8.67210870609215,
+            "avg_density": 200.79327282681504,
+            "avg_wait_time": 2966.084463658365,
+            "total_flow": 1514.920083439304,
+            "avg_queue_length": 98.17142590808729,
+            "congestion_pressure": 89.62254344117314
+          }
+        },
+        {
+          "type": "event",
+          "event": "Iteration Completed",
+          "payload": {
+            "iteration": 19,
+            "fitness": -0.18227228629335085
+          }
+        }
+      ]
+    }
+  ],
+  "final_result": {
+    "algorithm": "SA",
+    "green_times": [
+      20.8,
+      20.8,
+      41.6,
+      20.8
+    ],
+    "cycle_time": 120,
+    "avg_speed": 11.1716,
+    "avg_density": 195.5456,
+    "avg_wait_time": 3239.3289,
+    "total_flow": 1524.2614,
+    "avg_queue_length": 97.7728,
+    "congestion_pressure": 95.492456,
+    "fitness": -0.17583007,
+    "convergence_history": [
+      -0.17925912,
+      -0.17925912,
+      -0.17925912,
+      -0.17925912,
+      -0.17429728,
+      -0.17429728,
+      -0.17429728,
+      -0.17429728,
+      -0.17429728,
+      -0.17429728,
+      -0.17429728,
+      -0.17429728,
+      -0.17429728,
+      -0.17429728,
+      -0.17429728,
+      -0.17429728,
+      -0.17429728,
+      -0.17429728,
+      -0.17429728,
+      -0.17429728
+    ],
+    "simulation_steps": [
+      {
+        "cycle": 1,
+        "green_times": [
+          25.0,
+          25.0,
+          25.0,
+          25.0
+        ],
+        "avg_speed": 21.391,
+        "avg_density": 77.268,
+        "avg_wait": 2920.907,
+        "total_flow": 1304.918,
+        "avg_queue": 38.634,
+        "pressure": 42.1947
+      },
+      {
+        "cycle": 2,
+        "green_times": [
+          26.43,
+          15.51,
+          31.03,
+          31.03
+        ],
+        "avg_speed": 19.328,
+        "avg_density": 105.898,
+        "avg_wait": 3705.971,
+        "total_flow": 1611.259,
+        "avg_queue": 52.949,
+        "pressure": 58.5033
+      },
+      {
+        "cycle": 3,
+        "green_times": [
+          20.8,
+          20.8,
+          41.6,
+          20.8
+        ],
+        "avg_speed": 5.112,
+        "avg_density": 181.778,
+        "avg_wait": 2580.051,
+        "total_flow": 1567.475,
+        "avg_queue": 90.889,
+        "pressure": 62.4061
+      },
+      {
+        "cycle": 4,
+        "green_times": [
+          41.6,
+          20.8,
+          20.8,
+          20.8
+        ],
+        "avg_speed": 4.974,
+        "avg_density": 266.772,
+        "avg_wait": 3738.988,
+        "total_flow": 1537.144,
+        "avg_queue": 133.386,
+        "pressure": 147.6632
+      },
+      {
+        "cycle": 5,
+        "green_times": [
+          20.8,
+          20.8,
+          41.6,
+          20.8
+        ],
+        "avg_speed": 5.052,
+        "avg_density": 346.012,
+        "avg_wait": 3250.728,
+        "total_flow": 1600.511,
+        "avg_queue": 173.006,
+        "pressure": 166.695
+      }
+    ]
+  }
+}

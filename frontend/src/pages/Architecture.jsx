@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 
 // Local fallback layers definition
+// Local fallback layers definition
 const LOCAL_FALLBACK_NODES = {
   dataset: {
     id: "dataset",
@@ -57,6 +58,110 @@ const LOCAL_FALLBACK_NODES = {
       intuition: "As the vehicle density increases, speed decreases linearly to zero.",
       example: "If lane density is 30: v = 45 km/h."
     }
+  },
+  fitness: {
+    id: "fitness",
+    title: "Fitness Evaluation",
+    icon: Sliders,
+    step: 3,
+    purpose: "Translates vehicular metrics into a standardized quality score, determining the efficiency of candidate timing parameters.",
+    inputs: "Average speed, total flow rate, waiting latency, queue lengths, congestion index.",
+    outputs: "Continuous score value (fitness) within [-1.0, 1.0].",
+    files: "backend/evaluation/fitness.py",
+    moduleName: "evaluation.fitness",
+    executionSequence: "3. Calculated inside the objective evaluator function.",
+    dependencies: "Traffic Model output arrays."
+  },
+  optimizer: {
+    id: "optimizer",
+    title: "Optimizer Layer",
+    icon: Cpu,
+    step: 4,
+    purpose: "Runs continuous space parameter adjustments to find the best-performing membership breakpoint boundaries.",
+    inputs: "Fitness evaluation function, boundary dimensions, seed variables.",
+    outputs: "Updated population positions, global best parameter arrays.",
+    files: "backend/algorithms/",
+    moduleName: "algorithms.base.optimizer",
+    executionSequence: "4. Iteratively adjusts decision positions over generations during execution.",
+    dependencies: "Fitness Evaluation function."
+  },
+  telemetry: {
+    id: "telemetry",
+    title: "Telemetry Collector",
+    icon: Signal,
+    step: 5,
+    purpose: "Records step-by-step search characteristics and fitness progress at the end of every optimization generation.",
+    inputs: "Population fitness lists, evaluations index, generation counter.",
+    outputs: "Immutably frozen TelemetrySnapshot entries.",
+    files: "backend/algorithms/operators/telemetry_engine.py",
+    moduleName: "algorithms.operators.telemetry_engine",
+    executionSequence: "5. Invoked inside the step handler immediately after optimizer evaluation.",
+    dependencies: "Optimizer Layer state outputs."
+  },
+  extractor: {
+    id: "extractor",
+    title: "Feature Extraction",
+    icon: TrendingUp,
+    step: 6,
+    purpose: "Analyzes historical snapshot arrays to evaluate convergence gradients and stability rates.",
+    inputs: "Rolling window array of TelemetrySnapshot entries.",
+    outputs: "Progress Rate, Diversity Trend, Search Stability, Budget Pressure features.",
+    files: "backend/algorithms/operators/feature_extractor.py",
+    moduleName: "algorithms.operators.feature_extractor",
+    executionSequence: "6. Executed inside decision engine pre-processing pipeline.",
+    dependencies: "Telemetry Collector database."
+  },
+  estimator: {
+    id: "estimator",
+    title: "Need Estimation",
+    icon: Sliders,
+    step: 7,
+    purpose: "Evaluates trend indicators to score demands for searching behavior across three distinct objectives.",
+    inputs: "Extracted feature trends (Progress Rate, Diversity Trend, Search Stability, Budget Pressure).",
+    outputs: "Exploration, Exploitation, and Escape needs.",
+    files: "backend/algorithms/operators/need_estimator.py",
+    moduleName: "algorithms.operators.need_estimator",
+    executionSequence: "7. Executed to create the current demand profile.",
+    dependencies: "Feature Extraction outputs."
+  },
+  decision: {
+    id: "decision",
+    title: "Decision Engine",
+    icon: GitBranch,
+    step: 8,
+    purpose: "Maps current needs to static optimizer capability profiles to score suitability.",
+    inputs: "Normalized search needs, static optimizer capability configurations.",
+    outputs: "Sorted capability scoring lists, target strategy recommendation.",
+    files: "backend/algorithms/operators/decision_engine.py",
+    moduleName: "algorithms.operators.decision_engine",
+    executionSequence: "8. Evaluates profiles on every step to yield a strategy choice.",
+    dependencies: "Need Estimation outputs, Capability configurations."
+  },
+  controller: {
+    id: "controller",
+    title: "Adaptive Switch Controller",
+    icon: CheckSquare,
+    step: 9,
+    purpose: "Validates switch safety thresholds and cooldown locks before triggering strategy transitions.",
+    inputs: "Best recommended optimizer, current active optimizer name, active optimizer runtime steps, steps since last switch.",
+    outputs: "Boolean transition decision, target strategy updates.",
+    files: "backend/algorithms/operators/adaptive_switch_controller.py",
+    moduleName: "algorithms.operators.adaptive_switch_controller",
+    executionSequence: "9. Executed at the beginning of the step loop before invoking sub-optimizers.",
+    dependencies: "Decision Engine recommendations."
+  },
+  results: {
+    id: "results",
+    title: "Results Output",
+    icon: FileText,
+    step: 10,
+    purpose: "Exports optimization records, convergence values, and timing configurations to local database files.",
+    inputs: "Optimized parameter lists, convergence arrays, simulation metrics.",
+    outputs: "JSON result records saved to output directories.",
+    files: "backend/output/results/",
+    moduleName: "main.py Results Exporter",
+    executionSequence: "10. Executed at the completion of optimization runs.",
+    dependencies: "Adaptive Switch Controller evaluations."
   }
 };
 
