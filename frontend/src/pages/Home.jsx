@@ -70,6 +70,15 @@ export const Home = ({ onNavigate }) => {
 
         <Container size="default" className="flex flex-col items-center text-center gap-6 relative z-10">
 
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-zinc-950/80 border border-zinc-900 shadow-lg text-[11px] text-zinc-400 font-mono mb-4">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+            <span>Web Demo Mode</span>
+            <span className="text-zinc-700">|</span>
+            <span className="text-zinc-500">To execute live optimizations locally, clone the</span>
+            <code className="text-emerald-400 font-semibold font-mono">production</code>
+            <span className="text-zinc-500">branch.</span>
+          </div>
+
           <h1 className="text-4xl sm:text-6xl md:text-7xl text-zinc-100 tracking-tight leading-[1.1] max-w-4xl font-normal">
             Adaptive Traffic Signal Optimization & Fuzzy Intelligence
           </h1>

@@ -35,7 +35,7 @@ export const Documentation = () => {
       <Container size="default" className="flex flex-col gap-8">
         <PageHeader
           eyebrow="Research Specification"
-          title="Documentation & Master Blueprint"
+          title="Documentation"
           description="Complete developer guide, architectural specifications, and execution instructions for Navi Framework."
         />
 

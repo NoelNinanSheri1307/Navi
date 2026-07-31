@@ -311,7 +311,7 @@ export const BenchmarkCenter = () => {
                               key={row.algorithm}
                               fill="none"
                               stroke={color}
-                              strokeWidth="2.2"
+                              strokeWidth="1.0"
                               className="transition-all duration-300"
                               points={history.map((v, idx) => {
                                 const x = (idx / (history.length - 1)) * 100;

@@ -88,6 +88,12 @@ export const Telemetry = () => {
           }
         </Callout>
 
+        {metrics.currentAlgo === "None" && (
+          <Callout type="warning" title="No Active Simulation Detected">
+            The telemetry stream is currently idle. Please navigate to the Simulation page, select an algorithm, and click "Start" to begin streaming real-time optimization packets.
+          </Callout>
+        )}
+
         {/* Status Metrics Row */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <MetricCard 

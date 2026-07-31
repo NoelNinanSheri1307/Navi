@@ -295,6 +295,10 @@ export const Simulation = () => {
           description="Interactive testbed connected to uvicorn API. Run signal optimizations, monitor traffic updates, and observe strategy shifts live."
         />
 
+        <Callout type="info" title="Hosted Demonstration Mode">
+          The main branch is optimized for stable web demo hosting, bypassing heavy backend memory/CPU computations by using pre-recorded execution replays. To execute and benchmark live optimizations locally, please clone the <code className="text-emerald-400 font-mono font-semibold">production</code> branch.
+        </Callout>
+
         {/* Top Control Panel */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 bg-zinc-950/20 p-4 rounded-xl border border-zinc-900 shadow-xl">
           <div className="flex flex-col gap-1.5">
